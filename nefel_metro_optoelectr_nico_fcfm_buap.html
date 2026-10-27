@@ -1,0 +1,2622 @@
+<!DOCTYPE html>
+<html lang="es" class="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Nefelómetro Optoelectrónico · FCFM BUAP</title>
+  <script src="https://cdn.tailwindcss.com/3.4.17"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+  <script src="https://unpkg.com/lucide@0.460.0/dist/umd/lucide.min.js"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['-apple-system', 'BlinkMacSystemFont', '"SF Pro Display"', '"SF Pro Text"', '"Helvetica Neue"', 'Inter', 'sans-serif'],
+            mono: ['"SF Mono"', '"JetBrains Mono"', 'ui-monospace', 'SFMono-Regular', 'monospace']
+          }
+        }
+      }
+    };
+  </script>
+  <style>
+    :root {
+      --bg-primary: #050608;
+      --bg-card: #0e1015;
+      --bg-elevated: #161922;
+      --text-main: #f5f5f7;
+      --text-muted: #8e939e;
+      --accent-blue: #0a84ff;
+      --accent-green: #10b981;
+      --border-subtle: rgba(255, 255, 255, 0.08);
+    }
+    body {
+      background-color: var(--bg-primary);
+      color: var(--text-main);
+      font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", "Helvetica Neue", sans-serif;
+      -webkit-font-smoothing: antialiased;
+      margin: 0;
+      overflow-x: hidden;
+    }
+    .apple-glass {
+      background: rgba(10, 12, 16, 0.88);
+      backdrop-filter: saturate(180%) blur(20px);
+      -webkit-backdrop-filter: saturate(180%) blur(20px);
+      border-bottom: 1px solid var(--border-subtle);
+    }
+    .apple-card {
+      background: var(--bg-card);
+      border-radius: 18px;
+      border: 1px solid var(--border-subtle);
+      box-shadow: 0 10px 30px -5px rgba(0, 0, 0, 0.65);
+      transition: transform 0.18s ease, border-color 0.18s ease, background-color 0.18s ease;
+    }
+    .apple-pill-nav {
+      background: rgba(255, 255, 255, 0.06);
+      border-radius: 9999px;
+      padding: 3px;
+      border: 1px solid rgba(255, 255, 255, 0.06);
+    }
+    .apple-tab {
+      border-radius: 9999px;
+      padding: 5px 14px;
+      font-size: 12.5px;
+      font-weight: 500;
+      color: #9ca3af;
+      transition: all 0.18s ease;
+      white-space: nowrap;
+    }
+    .apple-tab:hover { color: #ffffff; }
+    .apple-tab.active {
+      background: #232733;
+      color: #ffffff;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.5);
+      font-weight: 600;
+    }
+    .apple-btn {
+      background: var(--accent-blue);
+      color: #ffffff;
+      border-radius: 9999px;
+      font-weight: 500;
+      transition: all 0.16s ease;
+    }
+    .apple-btn:hover { background: #2592ff; }
+    .apple-btn-secondary {
+      background: var(--bg-elevated);
+      color: #e5e7eb;
+      border-radius: 9999px;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      font-weight: 500;
+      transition: all 0.16s ease;
+    }
+    .apple-btn-secondary:hover {
+      background: #252a36;
+      border-color: rgba(255, 255, 255, 0.22);
+    }
+    input[type="range"] {
+      -webkit-appearance: none;
+      appearance: none;
+      height: 5px;
+      background: #262a36;
+      border-radius: 999px;
+      outline: none;
+    }
+    input[type="range"]::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      appearance: none;
+      width: 15px;
+      height: 15px;
+      border-radius: 50%;
+      background: #0a84ff;
+      cursor: pointer;
+      border: 2px solid #ffffff;
+      box-shadow: 0 1px 5px rgba(0,0,0,0.6);
+    }
+    .schem-node {
+      cursor: pointer;
+      transition: filter 0.15s ease, opacity 0.15s ease;
+    }
+    .schem-node:hover {
+      filter: drop-shadow(0 0 8px rgba(16, 185, 129, 0.9));
+    }
+    ::-webkit-scrollbar { width: 6px; height: 6px; }
+    ::-webkit-scrollbar-track { background: #07080c; }
+    ::-webkit-scrollbar-thumb { background: #2a2f3d; border-radius: 999px; }
+  </style>
+</head>
+<body class="min-h-screen flex flex-col selection:bg-blue-500 selection:text-white">
+
+  <!-- TOP DARK NAVIGATION BAR -->
+  <header class="apple-glass sticky top-0 z-40 px-4 lg:px-8 h-14 flex items-center justify-between gap-3">
+    <button id="btnGoHomeBrand" onclick="switchTab('inicio')" class="flex items-center gap-2.5 text-left group">
+      <div class="w-8 h-8 rounded-xl bg-emerald-500/15 border border-emerald-500/30 text-emerald-400 flex items-center justify-center group-hover:bg-emerald-500 group-hover:text-black transition-colors">
+        <i data-lucide="cpu" class="w-4 h-4"></i>
+      </div>
+      <span class="text-[13px] font-semibold tracking-tight text-white">Nefelómetro Optoelectrónico</span>
+    </button>
+
+    <nav class="apple-pill-nav flex items-center overflow-x-auto max-w-full" aria-label="Navegación">
+      <button onclick="switchTab('inicio')" data-tab="inicio" class="nav-tab-btn apple-tab active">Inicio</button>
+      <button onclick="switchTab('3d')" data-tab="3d" class="nav-tab-btn apple-tab flex items-center gap-1.5">
+        <span class="w-2 h-2 rounded-full bg-emerald-400"></span>Diseño 3D
+      </button>
+      <button onclick="switchTab('camara')" data-tab="camara" class="nav-tab-btn apple-tab">Cámara</button>
+      <button onclick="switchTab('osciloscopio')" data-tab="osciloscopio" class="nav-tab-btn apple-tab">Osciloscopio</button>
+      <button onclick="switchTab('contaminantes')" data-tab="contaminantes" class="nav-tab-btn apple-tab">Agua</button>
+      <button onclick="switchTab('datalogger')" data-tab="datalogger" class="nav-tab-btn apple-tab">Datos</button>
+      <button onclick="switchTab('firmware')" data-tab="firmware" class="nav-tab-btn apple-tab">Código</button>
+    </nav>
+
+    <div class="hidden xl:flex items-center gap-2">
+      <div class="px-3 py-1 rounded-full bg-[#141720] border border-white/10 text-[11px] font-mono flex items-center gap-2">
+        <span id="statusDotSerial" class="w-2 h-2 rounded-full bg-emerald-400"></span>
+        <span id="headerAcqMode" class="text-[#8e939e]">SIM</span>
+        <span class="text-white/15">|</span>
+        <span class="text-white font-semibold" id="headerNTU">14.2 NTU</span>
+        <span class="text-white/15">|</span>
+        <span class="text-emerald-400 font-semibold" id="headerVout">0.382 V</span>
+        <span class="text-white/15">|</span>
+        <span class="text-sky-400 font-semibold" id="headerSNR">44.8 dB</span>
+        <span class="text-white/15">|</span>
+        <span class="text-purple-400 font-semibold" id="headerPsuVal">±12.0 V</span>
+      </div>
+      <button id="btnConnectSerialTop" onclick="connectWebSerial()" class="apple-btn-secondary px-3 py-1 text-xs flex items-center gap-1.5">
+        <i data-lucide="usb" class="w-3.5 h-3.5 text-sky-400"></i>
+        <span id="serialBtnLabel">Conectar Arduino</span>
+      </button>
+      <button id="btnOpenDisclaimerTop" onclick="openDisclaimerModal()" class="apple-btn-secondary px-2.5 py-1 text-xs text-[#8e939e] hover:text-white">
+        Derechos
+      </button>
+    </div>
+  </header>
+
+  <!-- COMPACT TELEMETRY BAR (HIDDEN ON SOBER HOME, SHOWN ON INSTRUMENT TABS) -->
+  <section id="controlBarSection" class="hidden bg-[#0a0c12] border-b border-white/10 px-4 lg:px-8 py-2">
+    <div class="max-w-7xl mx-auto flex flex-wrap items-center justify-between gap-3">
+      <div class="flex flex-wrap items-center gap-4">
+        <div class="flex items-center gap-2">
+          <span class="text-[10.5px] font-semibold text-[#8e939e] uppercase">Turbidez</span>
+          <input id="sliderSimNTU" type="range" min="0" max="200" step="0.5" value="14.2" oninput="updateSimulationParams()" class="w-24" />
+          <span id="labelSimNTU" class="text-xs font-mono font-semibold text-white w-16">14.2 NTU</span>
+        </div>
+        <div class="flex items-center gap-2">
+          <span class="text-[10.5px] font-semibold text-[#8e939e] uppercase">Fuente ±V</span>
+          <input id="sliderSymmetricVoltage" type="range" min="5" max="15" step="0.5" value="12" oninput="updateSimulationParams()" class="w-20" />
+          <span id="valSymmetricPsu" class="text-xs font-mono font-semibold text-purple-400">±12.0 V</span>
+          <span id="labelSimPsu" class="hidden">±12.0 V</span>
+        </div>
+        <div class="flex items-center gap-2">
+          <span class="text-[10.5px] font-semibold text-[#8e939e] uppercase">Polarizador θ</span>
+          <input id="sliderMalusAngle" type="range" min="0" max="89" step="1" value="80" oninput="updateSimulationParams()" class="w-20" />
+          <span id="valMalusAngle" class="text-xs font-mono font-semibold text-emerald-400">80°</span>
+        </div>
+        <select id="selectContaminantPreset" onchange="applyContaminantPreset()" class="bg-[#161922] border border-white/10 rounded-lg px-2.5 py-1 text-xs font-medium text-white outline-none">
+          <option value="drinking" selected>Agua Potable (NOM-127)</option>
+          <option value="ultrapure">Blanco Destilada (0 NTU)</option>
+          <option value="clay">Formazina / Arcilla (45 NTU)</option>
+          <option value="algae">Río Atoyac / Valsequillo</option>
+          <option value="microplastics">Microplásticos (18 NTU)</option>
+          <option value="wastewater">Floculación Alumbre</option>
+        </select>
+      </div>
+
+      <div class="flex items-center gap-2">
+        <div class="px-2.5 py-1 rounded-lg bg-[#161922] border border-white/5 text-[11px] font-mono flex items-center gap-2">
+          <span class="text-[#8e939e]">ADC_90 (A1):</span><strong id="quickV90" class="text-emerald-400">0.382 V</strong>
+          <span class="text-[#8e939e]">ADC_0 (A0):</span><strong id="quickV0" class="text-sky-400">2.410 V</strong>
+          <span class="text-[#8e939e]">R:</span><strong id="quickRatio" class="text-white">0.1585</strong>
+        </div>
+        <button id="btnInjectPulse" onclick="injectParticleSpike()" class="apple-btn-secondary px-2.5 py-1 text-xs">Pulso</button>
+        <button id="btnQuickCapture" onclick="logCurrentSample()" class="apple-btn px-3 py-1 text-xs">Guardar</button>
+        <button id="btnPauseGlobal" onclick="toggleGlobalPause()" class="apple-btn-secondary px-2.5 py-1 text-xs">
+          <span id="pauseBtnLabel">Pausar</span>
+        </button>
+      </div>
+    </div>
+  </section>
+
+  <!-- MAIN WORKSPACE -->
+  <main class="flex-1 max-w-7xl w-full mx-auto px-4 lg:px-8 py-6 flex flex-col">
+
+    <!-- =================================================================== -->
+    <!-- TAB 0: INICIO (ULTRA-SOBER: ONLY SECTION NAMES & ICONS)             -->
+    <!-- =================================================================== -->
+    <section id="tab-inicio" class="my-auto py-10 space-y-8">
+      <div class="text-center space-y-1.5">
+        <h1 class="text-2xl lg:text-3xl font-semibold tracking-tight text-white">
+          Nefelómetro Optoelectrónico
+        </h1>
+        <p class="text-xs font-mono text-[#8e939e]">FCFM BUAP</p>
+      </div>
+
+      <!-- 6 Sober Tiles: Only Icon + Section Name -->
+      <div class="grid grid-cols-2 sm:grid-cols-3 gap-4 max-w-2xl mx-auto">
+        <button onclick="switchTab('3d')" class="apple-card p-6 flex flex-col items-center justify-center gap-3 hover:border-emerald-500/50 hover:bg-[#141821] group text-center">
+          <div class="w-11 h-11 rounded-2xl bg-emerald-500/10 border border-emerald-500/25 text-emerald-400 flex items-center justify-center group-hover:scale-105 transition-transform">
+            <i data-lucide="cpu" class="w-5 h-5"></i>
+          </div>
+          <span class="text-xs font-semibold text-white">Diseño 3D y Esquema</span>
+        </button>
+
+        <button onclick="switchTab('camara')" class="apple-card p-6 flex flex-col items-center justify-center gap-3 hover:border-sky-500/50 hover:bg-[#141821] group text-center">
+          <div class="w-11 h-11 rounded-2xl bg-sky-500/10 border border-sky-500/25 text-sky-400 flex items-center justify-center group-hover:scale-105 transition-transform">
+            <i data-lucide="camera" class="w-5 h-5"></i>
+          </div>
+          <span class="text-xs font-semibold text-white">Cámara Oscura</span>
+        </button>
+
+        <button onclick="switchTab('osciloscopio')" class="apple-card p-6 flex flex-col items-center justify-center gap-3 hover:border-purple-500/50 hover:bg-[#141821] group text-center">
+          <div class="w-11 h-11 rounded-2xl bg-purple-500/10 border border-purple-500/25 text-purple-400 flex items-center justify-center group-hover:scale-105 transition-transform">
+            <i data-lucide="activity" class="w-5 h-5"></i>
+          </div>
+          <span class="text-xs font-semibold text-white">Osciloscopio</span>
+        </button>
+
+        <button onclick="switchTab('contaminantes')" class="apple-card p-6 flex flex-col items-center justify-center gap-3 hover:border-cyan-500/50 hover:bg-[#141821] group text-center">
+          <div class="w-11 h-11 rounded-2xl bg-cyan-500/10 border border-cyan-500/25 text-cyan-400 flex items-center justify-center group-hover:scale-105 transition-transform">
+            <i data-lucide="droplets" class="w-5 h-5"></i>
+          </div>
+          <span class="text-xs font-semibold text-white">Agua y Muestras</span>
+        </button>
+
+        <button onclick="switchTab('datalogger')" class="apple-card p-6 flex flex-col items-center justify-center gap-3 hover:border-amber-500/50 hover:bg-[#141821] group text-center">
+          <div class="w-11 h-11 rounded-2xl bg-amber-500/10 border border-amber-500/25 text-amber-400 flex items-center justify-center group-hover:scale-105 transition-transform">
+            <i data-lucide="database" class="w-5 h-5"></i>
+          </div>
+          <span class="text-xs font-semibold text-white">Datos</span>
+        </button>
+
+        <button onclick="switchTab('firmware')" class="apple-card p-6 flex flex-col items-center justify-center gap-3 hover:border-slate-400/50 hover:bg-[#141821] group text-center">
+          <div class="w-11 h-11 rounded-2xl bg-white/5 border border-white/15 text-slate-300 flex items-center justify-center group-hover:scale-105 transition-transform">
+            <i data-lucide="code-2" class="w-5 h-5"></i>
+          </div>
+          <span class="text-xs font-semibold text-white">Código</span>
+        </button>
+      </div>
+
+      <div class="text-center">
+        <button id="btnHeroDisclaimer" onclick="openDisclaimerModal()" class="text-[11px] text-[#8e939e] hover:text-white">
+          Ian Axel Alcantarilla Vázquez · José Luis Rivas Vargas · Derechos
+        </button>
+        <button id="btnCardDisclaimer" onclick="openDisclaimerModal()" class="hidden">Leer Descargo de Derechos Completo</button>
+      </div>
+    </section>
+
+    <!-- =================================================================== -->
+    <!-- TAB 1: DISEÑO 3D REALISTA (FULL WIDTH) + ESQUEMA CAD MEJORADO       -->
+    <!-- =================================================================== -->
+    <section id="tab-3d" class="hidden space-y-4">
+      <!-- Top Control Strip -->
+      <div class="apple-card p-3 flex flex-wrap items-center justify-between gap-2">
+        <div class="flex flex-wrap items-center gap-1.5">
+          <button id="btn3dIsoView" onclick="set3dCameraView('iso')" class="apple-btn px-3 py-1.5 text-xs">Vista Isométrica</button>
+          <button id="btn3dTopView" onclick="set3dCameraView('top')" class="apple-btn-secondary px-3 py-1.5 text-xs">Vista Placa 2D/3D</button>
+          <button onclick="set3dCameraView('bridges')" class="apple-btn-secondary px-3 py-1.5 text-xs text-emerald-400">Zoom Placa (R1–R4, C1–C2, D1–D2)</button>
+          <button onclick="set3dCameraView('chamber')" class="apple-btn-secondary px-3 py-1.5 text-xs text-sky-400">Zoom Cámara (FA 0° y FB 90°)</button>
+        </div>
+
+        <div class="flex flex-wrap items-center gap-1.5">
+          <button id="btn3dToggleBridges" onclick="toggle3dBridges()" class="apple-btn-secondary px-3 py-1.5 text-xs text-emerald-400 border-emerald-500/30">
+            Cables y Puentes: ON
+          </button>
+          <button id="btn3dToggleLabels" onclick="toggle3dLabels()" class="apple-btn-secondary px-3 py-1.5 text-xs">
+            Etiquetas: ON
+          </button>
+          <span id="label3dState" class="text-[11px] font-mono text-[#8e939e] px-2">3D Activo</span>
+        </div>
+      </div>
+
+      <!-- FULL-WIDTH 3D VIEWPORT (100% WIDTH SO NOTHING IS EVER CLIPPED) -->
+      <div class="apple-card overflow-hidden relative flex flex-col">
+        <div id="threeContainer" class="relative w-full h-[500px] bg-[#040508] select-none overflow-hidden">
+          <canvas id="threeCanvas" class="w-full h-full block cursor-grab active:cursor-grabbing"></canvas>
+          <div id="threeLabelsContainer" class="absolute inset-0 pointer-events-none overflow-hidden"></div>
+
+          <!-- Top-Left Legend -->
+          <div class="absolute top-3 left-3 bg-[#0a0c12]/90 backdrop-blur-md border border-white/10 rounded-xl px-3 py-1.5 text-[10.5px] font-mono text-gray-300 pointer-events-none flex flex-wrap items-center gap-3">
+            <span><strong class="text-emerald-400">●</strong> FA (0° → R2 1.6K → C1 10µF → R3 680 → D2 5.1V → A0)</span>
+            <span><strong class="text-sky-400">●</strong> FB (90° → R1 1.6K → C2 10µF → R4 680 → D1 5.1V → A1)</span>
+            <span><strong class="text-red-400">●</strong> VCC</span>
+            <span><strong class="text-amber-400">●</strong> GND</span>
+          </div>
+
+          <!-- Bottom-Left Navigation Pad -->
+          <div class="absolute bottom-3 left-3 bg-[#0a0c12]/90 backdrop-blur-md border border-white/10 rounded-2xl p-2 flex items-center gap-2 z-20">
+            <div class="grid grid-cols-3 gap-1 w-20">
+              <div></div>
+              <button onclick="pan3dCamera(0, 0, -0.9)" class="h-6 rounded bg-white/10 hover:bg-[#0a84ff] text-white text-xs font-bold">↑</button>
+              <div></div>
+              <button onclick="pan3dCamera(-0.9, 0, 0)" class="h-6 rounded bg-white/10 hover:bg-[#0a84ff] text-white text-xs font-bold">←</button>
+              <button onclick="set3dCameraView('iso')" class="h-6 rounded bg-emerald-500 text-black text-[10px] font-bold">●</button>
+              <button onclick="pan3dCamera(0.9, 0, 0)" class="h-6 rounded bg-white/10 hover:bg-[#0a84ff] text-white text-xs font-bold">→</button>
+              <div></div>
+              <button onclick="pan3dCamera(0, 0, 0.9)" class="h-6 rounded bg-white/10 hover:bg-[#0a84ff] text-white text-xs font-bold">↓</button>
+              <div></div>
+            </div>
+            <div class="flex flex-col gap-1 border-l border-white/10 pl-2">
+              <button onclick="zoom3dCamera(-1.5)" class="px-2 py-0.5 rounded bg-white/10 hover:bg-[#0a84ff] text-white text-[10.5px] font-mono">Zoom +</button>
+              <button onclick="zoom3dCamera(1.5)" class="px-2 py-0.5 rounded bg-white/10 hover:bg-[#0a84ff] text-white text-[10.5px] font-mono">Zoom −</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Stage Filter Bar -->
+        <div class="p-2.5 bg-[#0a0c12] border-t border-white/10 flex flex-wrap items-center justify-between gap-2">
+          <div class="flex flex-wrap items-center gap-1.5">
+            <button onclick="focus3dGroup('all')" data-stage3d="all" class="stage3d-btn apple-btn px-3 py-1 text-xs">Todo el Circuito (1,332 pts)</button>
+            <button onclick="focus3dGroup('chamber')" data-stage3d="chamber" class="stage3d-btn apple-btn-secondary px-3 py-1 text-xs">4. Cámara ESP32-S3 + Celda 90°</button>
+            <button onclick="focus3dGroup('opt101')" data-stage3d="opt101" class="stage3d-btn apple-btn-secondary px-3 py-1 text-xs">2. CJMCU-101 (OPT101) + Cap 100pF</button>
+            <button onclick="focus3dGroup('protection')" data-stage3d="protection" class="stage3d-btn apple-btn-secondary px-3 py-1 text-xs">3. Zener 6V + Divisor a Arduino UNO</button>
+            <button onclick="focus3dGroup('psu')" data-stage3d="psu" class="stage3d-btn apple-btn-secondary px-3 py-1 text-xs">1. Fuente ±15V + Zeners 10V / 9V</button>
+          </div>
+          <span class="text-[11px] font-mono text-[#8e939e]">Arrastra para rotar · Clic derecho o WASD para mover · Rueda para zoom</span>
+        </div>
+      </div>
+
+      <!-- SIDE-BY-SIDE: UPGRADED INTERACTIVE CAD SCHEMATIC (8 COLS) + PIN INSPECTOR (4 COLS) -->
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-4">
+        <!-- Upgraded Dark CAD Schematic (8 Cols) -->
+        <div class="lg:col-span-8 apple-card p-4 space-y-2.5">
+          <div class="flex flex-wrap items-center justify-between gap-2">
+            <span class="text-xs font-bold text-white flex items-center gap-2">
+              <span class="w-2 h-2 rounded-full bg-emerald-400"></span>
+              Esquema Eléctrico Real (FA 0° y FB 90° · Clic en cualquier bloque para enfocar en 3D)
+            </span>
+            <span class="text-[10.5px] font-mono text-[#8e939e]">R1,R2 = 1.6K · C1,C2 = 10µF · R3,R4 = 680Ω · D1,D2 = BZX55C5V1</span>
+          </div>
+
+          <div class="w-full overflow-x-auto rounded-xl border border-white/10 bg-[#06080d] p-2">
+            <svg viewBox="0 0 1120 490" class="w-full min-w-[780px] h-auto select-none font-mono">
+              <defs>
+                <pattern id="cadGridSmall" width="20" height="20" patternUnits="userSpaceOnUse">
+                  <path d="M 20 0 L 0 0 0 20" fill="none" stroke="rgba(255,255,255,0.035)" stroke-width="1"/>
+                </pattern>
+                <pattern id="cadGridLarge" width="100" height="100" patternUnits="userSpaceOnUse">
+                  <rect width="100" height="100" fill="url(#cadGridSmall)"/>
+                  <path d="M 100 0 L 0 0 0 100" fill="none" stroke="rgba(255,255,255,0.08)" stroke-width="1"/>
+                </pattern>
+              </defs>
+
+              <rect width="1120" height="490" fill="url(#cadGridLarge)" />
+
+              <!-- DARK CHAMBER OPTICS -->
+              <g class="schem-node" onclick="focus3dGroup('chamber')">
+                <rect x="18" y="24" width="195" height="240" rx="12" fill="#0d111a" stroke="#334155" stroke-width="1.5" stroke-dasharray="5,4"/>
+                <text x="30" y="46" fill="#94a3b8" font-size="11" font-weight="bold">CÁMARA OSCURA 3D</text>
+
+                <rect x="30" y="72" width="58" height="28" rx="4" fill="#1e293b" stroke="#f59e0b" stroke-width="1.5"/>
+                <text x="37" y="90" fill="#fbbf24" font-size="10" font-weight="bold">532 nm</text>
+                <line x1="88" y1="86" x2="122" y2="86" stroke="#10b981" stroke-width="3"/>
+
+                <rect x="122" y="64" width="42" height="44" rx="4" fill="rgba(56,189,248,0.15)" stroke="#38bdf8" stroke-width="1.8"/>
+                <text x="127" y="89" fill="#e0f2fe" font-size="9.5">Celda</text>
+
+                <rect x="176" y="68" width="12" height="36" rx="2" fill="rgba(16,185,129,0.25)" stroke="#10b981" stroke-width="1.5"/>
+                <text x="148" y="57" fill="#34d399" font-size="9.5">Malus θ=80°</text>
+
+                <line x1="164" y1="86" x2="238" y2="86" stroke="#10b981" stroke-width="2.5" stroke-dasharray="3,2"/>
+                <line x1="143" y1="108" x2="143" y2="210" stroke="#38bdf8" stroke-width="2.5" stroke-dasharray="4,3"/>
+                <line x1="143" y1="210" x2="238" y2="210" stroke="#38bdf8" stroke-width="2.5" stroke-dasharray="4,3"/>
+                <text x="42" y="162" fill="#38bdf8" font-size="9.5">Dispersión 90°</text>
+
+                <rect x="32" y="212" width="95" height="36" rx="5" fill="#172033" stroke="#60a5fa" stroke-width="1.2"/>
+                <text x="42" y="234" fill="#93c5fd" font-size="10" font-weight="bold">ESP32-S3 CAM</text>
+              </g>
+
+              <!-- FA (OPT101 0°) -->
+              <g class="schem-node" onclick="focus3dGroup('opt101')">
+                <rect x="238" y="42" width="92" height="105" rx="6" fill="#17132b" stroke="#10b981" stroke-width="2"/>
+                <text x="212" y="95" fill="#34d399" font-size="13" font-weight="bold">FA</text>
+                <text x="248" y="60" fill="#a7f3d0" font-size="10" font-weight="bold">OPT101 (0°)</text>
+                <text x="248" y="74" fill="#9ca3af" font-size="9">R_F = 1 MΩ</text>
+                <text x="248" y="88" fill="#fbbf24" font-size="8.5">Puente Pin 4–5</text>
+                <circle cx="316" cy="134" r="3.5" fill="none" stroke="#10b981" stroke-width="1.5"/>
+
+                <text x="296" y="68" fill="#ffffff" font-size="10.5" font-weight="bold">OUT</text>
+                <text x="296" y="96" fill="#9ca3af" font-size="10.5">GND</text>
+                <text x="296" y="122" fill="#f87171" font-size="10.5">VCC</text>
+
+                <line x1="330" y1="92" x2="388" y2="92" stroke="#f59e0b" stroke-width="2"/>
+                <line x1="388" y1="80" x2="388" y2="104" stroke="#f59e0b" stroke-width="2"/>
+                <line x1="394" y1="84" x2="394" y2="100" stroke="#f59e0b" stroke-width="2"/>
+                <line x1="400" y1="88" x2="400" y2="96" stroke="#f59e0b" stroke-width="2"/>
+                <text x="406" y="96" fill="#fbbf24" font-size="10" font-weight="bold">GND</text>
+
+                <line x1="330" y1="118" x2="365" y2="118" stroke="#ef4444" stroke-width="2"/>
+                <line x1="365" y1="108" x2="365" y2="128" stroke="#ef4444" stroke-width="2.5"/>
+                <text x="352" y="142" fill="#f87171" font-size="10" font-weight="bold">VCC</text>
+              </g>
+
+              <!-- FB (OPT101 90°) -->
+              <g class="schem-node" onclick="focus3dGroup('opt101')">
+                <rect x="238" y="172" width="92" height="105" rx="6" fill="#17132b" stroke="#38bdf8" stroke-width="2"/>
+                <text x="212" y="225" fill="#38bdf8" font-size="13" font-weight="bold">FB</text>
+                <text x="248" y="190" fill="#bae6fd" font-size="10" font-weight="bold">OPT101 (90°)</text>
+                <text x="248" y="204" fill="#9ca3af" font-size="9">R_F = 1 MΩ</text>
+                <text x="248" y="218" fill="#fbbf24" font-size="8.5">Puente Pin 4–5</text>
+                <circle cx="316" cy="264" r="3.5" fill="none" stroke="#38bdf8" stroke-width="1.5"/>
+
+                <text x="296" y="198" fill="#ffffff" font-size="10.5" font-weight="bold">OUT</text>
+                <text x="296" y="226" fill="#9ca3af" font-size="10.5">GND</text>
+                <text x="296" y="252" fill="#f87171" font-size="10.5">VCC</text>
+
+                <line x1="330" y1="222" x2="388" y2="222" stroke="#f59e0b" stroke-width="2"/>
+                <line x1="388" y1="210" x2="388" y2="234" stroke="#f59e0b" stroke-width="2"/>
+                <line x1="394" y1="214" x2="394" y2="230" stroke="#f59e0b" stroke-width="2"/>
+                <line x1="400" y1="218" x2="400" y2="226" stroke="#f59e0b" stroke-width="2"/>
+                <text x="406" y="226" fill="#fbbf24" font-size="10" font-weight="bold">GND</text>
+
+                <line x1="330" y1="248" x2="365" y2="248" stroke="#ef4444" stroke-width="2"/>
+                <line x1="365" y1="238" x2="365" y2="258" stroke="#ef4444" stroke-width="2.5"/>
+                <text x="352" y="272" fill="#f87171" font-size="10" font-weight="bold">VCC</text>
+              </g>
+
+              <!-- ARDUINO_UNO -->
+              <g class="schem-node" onclick="focus3dGroup('protection')">
+                <rect x="238" y="312" width="92" height="122" rx="6" fill="#0c243c" stroke="#0a84ff" stroke-width="2"/>
+                <text x="218" y="454" fill="#60a5fa" font-size="12.5" font-weight="bold">ARDUINO_UNO</text>
+                <circle cx="316" cy="420" r="3.5" fill="none" stroke="#60a5fa" stroke-width="1.5"/>
+
+                <text x="304" y="338" fill="#ffffff" font-size="11" font-weight="bold">A1</text>
+                <line x1="330" y1="334" x2="415" y2="334" stroke="#38bdf8" stroke-width="2.2"/>
+                <circle cx="415" cy="334" r="3.5" fill="#38bdf8"/>
+                <text x="355" y="328" fill="#38bdf8" font-size="11" font-weight="bold">ADC_90</text>
+
+                <text x="304" y="364" fill="#ffffff" font-size="11" font-weight="bold">A0</text>
+                <line x1="330" y1="360" x2="415" y2="360" stroke="#10b981" stroke-width="2.2"/>
+                <circle cx="415" cy="360" r="3.5" fill="#10b981"/>
+                <text x="355" y="354" fill="#10b981" font-size="11" font-weight="bold">ADC_0</text>
+
+                <text x="296" y="392" fill="#9ca3af" font-size="10.5">GND</text>
+                <line x1="330" y1="388" x2="388" y2="388" stroke="#f59e0b" stroke-width="2"/>
+                <line x1="388" y1="376" x2="388" y2="400" stroke="#f59e0b" stroke-width="2"/>
+                <line x1="394" y1="380" x2="394" y2="396" stroke="#f59e0b" stroke-width="2"/>
+                <line x1="400" y1="384" x2="400" y2="392" stroke="#f59e0b" stroke-width="2"/>
+                <text x="410" y="392" fill="#fbbf24" font-size="10" font-weight="bold">GND</text>
+
+                <text x="296" y="418" fill="#f87171" font-size="10.5">VCC</text>
+                <line x1="330" y1="414" x2="365" y2="414" stroke="#ef4444" stroke-width="2"/>
+                <line x1="365" y1="404" x2="365" y2="424" stroke="#ef4444" stroke-width="2.5"/>
+                <text x="342" y="436" fill="#f87171" font-size="10" font-weight="bold">VCC</text>
+              </g>
+
+              <!-- FB -> R1 (1.6K) -> C2 (10uF) -> R4 (680) -> D1 (BZX55C5V1) -> ADC_90 -->
+              <g class="schem-node" onclick="focus3dGroup('protection')">
+                <polyline points="330,194 352,194 352,158 580,158 580,185" fill="none" stroke="#38bdf8" stroke-width="2.5"/>
+
+                <rect x="570" y="185" width="20" height="48" fill="#10141d" stroke="#ef4444" stroke-width="2"/>
+                <text x="598" y="204" fill="#60a5fa" font-size="11.5" font-weight="bold">R1</text>
+                <text x="598" y="222" fill="#38bdf8" font-size="11.5" font-weight="bold">1.6K</text>
+
+                <line x1="580" y1="233" x2="580" y2="305" stroke="#10b981" stroke-width="2.5"/>
+                <circle cx="580" cy="268" r="4.5" fill="#ef4444"/>
+
+                <line x1="580" y1="268" x2="618" y2="268" stroke="#ef4444" stroke-width="2"/>
+                <text x="592" y="262" fill="#f87171" font-size="13" font-weight="bold">+</text>
+                <line x1="618" y1="252" x2="618" y2="284" stroke="#ef4444" stroke-width="2.5"/>
+                <line x1="627" y1="252" x2="627" y2="284" stroke="#ef4444" stroke-width="2.5"/>
+                <text x="595" y="246" fill="#93c5fd" font-size="11" font-weight="bold">C2</text>
+                <text x="592" y="300" fill="#38bdf8" font-size="11" font-weight="bold">10uF</text>
+                <line x1="627" y1="268" x2="668" y2="268" stroke="#ef4444" stroke-width="2"/>
+                <line x1="668" y1="254" x2="668" y2="282" stroke="#f59e0b" stroke-width="2"/>
+                <line x1="674" y1="258" x2="674" y2="278" stroke="#f59e0b" stroke-width="2"/>
+                <line x1="680" y1="262" x2="680" y2="274" stroke="#f59e0b" stroke-width="2"/>
+                <text x="688" y="272" fill="#fbbf24" font-size="10.5" font-weight="bold">GND</text>
+
+                <rect x="570" y="305" width="20" height="48" fill="#10141d" stroke="#ef4444" stroke-width="2"/>
+                <text x="598" y="324" fill="#60a5fa" font-size="11.5" font-weight="bold">R4</text>
+                <text x="598" y="342" fill="#38bdf8" font-size="11.5" font-weight="bold">680</text>
+
+                <line x1="580" y1="353" x2="580" y2="395" stroke="#10b981" stroke-width="2.5"/>
+                <circle cx="580" cy="374" r="4.5" fill="#ef4444"/>
+                <line x1="580" y1="374" x2="618" y2="374" stroke="#38bdf8" stroke-width="2.2"/>
+                <circle cx="618" cy="374" r="3.5" fill="#38bdf8"/>
+                <text x="625" y="370" fill="#38bdf8" font-size="11.5" font-weight="bold">ADC_90</text>
+
+                <polygon points="580,395 566,420 594,420" fill="none" stroke="#ef4444" stroke-width="2"/>
+                <polyline points="562,401 566,395 594,395 598,389" fill="none" stroke="#ef4444" stroke-width="2"/>
+                <text x="606" y="405" fill="#60a5fa" font-size="11" font-weight="bold">D1</text>
+                <text x="606" y="422" fill="#38bdf8" font-size="11" font-weight="bold">BZX55C5V1</text>
+
+                <line x1="580" y1="420" x2="580" y2="452" stroke="#ef4444" stroke-width="2"/>
+                <line x1="564" y1="452" x2="596" y2="452" stroke="#f59e0b" stroke-width="2"/>
+                <line x1="570" y1="458" x2="590" y2="458" stroke="#f59e0b" stroke-width="2"/>
+                <line x1="575" y1="464" x2="585" y2="464" stroke="#f59e0b" stroke-width="2"/>
+                <text x="566" y="478" fill="#fbbf24" font-size="10.5" font-weight="bold">GND</text>
+              </g>
+
+              <!-- FA -> R2 (1.6K) -> C1 (10uF) -> R3 (680) -> D2 (BZX55C5V1) -> ADC_0 -->
+              <g class="schem-node" onclick="focus3dGroup('protection')">
+                <polyline points="330,64 352,64 352,28 820,28 820,62" fill="none" stroke="#10b981" stroke-width="2.5"/>
+
+                <rect x="810" y="62" width="20" height="48" fill="#10141d" stroke="#ef4444" stroke-width="2"/>
+                <text x="838" y="80" fill="#60a5fa" font-size="11.5" font-weight="bold">R2</text>
+                <text x="838" y="98" fill="#10b981" font-size="11.5" font-weight="bold">1.6K</text>
+
+                <line x1="820" y1="110" x2="820" y2="180" stroke="#10b981" stroke-width="2.5"/>
+                <circle cx="820" cy="144" r="4.5" fill="#ef4444"/>
+
+                <line x1="820" y1="144" x2="858" y2="144" stroke="#ef4444" stroke-width="2"/>
+                <text x="832" y="138" fill="#f87171" font-size="13" font-weight="bold">+</text>
+                <line x1="858" y1="128" x2="858" y2="160" stroke="#ef4444" stroke-width="2.5"/>
+                <line x1="867" y1="128" x2="867" y2="160" stroke="#ef4444" stroke-width="2.5"/>
+                <text x="835" y="122" fill="#93c5fd" font-size="11" font-weight="bold">C1</text>
+                <text x="832" y="176" fill="#10b981" font-size="11" font-weight="bold">10uF</text>
+                <line x1="867" y1="144" x2="908" y2="144" stroke="#ef4444" stroke-width="2"/>
+                <line x1="908" y1="130" x2="908" y2="158" stroke="#f59e0b" stroke-width="2"/>
+                <line x1="914" y1="134" x2="914" y2="154" stroke="#f59e0b" stroke-width="2"/>
+                <line x1="920" y1="138" x2="920" y2="150" stroke="#f59e0b" stroke-width="2"/>
+                <text x="928" y="148" fill="#fbbf24" font-size="10.5" font-weight="bold">GND</text>
+
+                <rect x="810" y="180" width="20" height="48" fill="#10141d" stroke="#ef4444" stroke-width="2"/>
+                <text x="775" y="198" fill="#60a5fa" font-size="11.5" font-weight="bold">R3</text>
+                <text x="775" y="216" fill="#10b981" font-size="11.5" font-weight="bold">680</text>
+
+                <line x1="820" y1="228" x2="820" y2="270" stroke="#10b981" stroke-width="2.5"/>
+                <circle cx="820" cy="248" r="4.5" fill="#ef4444"/>
+                <line x1="820" y1="248" x2="858" y2="248" stroke="#10b981" stroke-width="2.2"/>
+                <circle cx="858" cy="248" r="3.5" fill="#10b981"/>
+                <text x="865" y="244" fill="#10b981" font-size="11.5" font-weight="bold">ADC_0</text>
+
+                <polygon points="820,270 806,295 834,295" fill="none" stroke="#ef4444" stroke-width="2"/>
+                <polyline points="802,276 806,270 834,270 838,264" fill="none" stroke="#ef4444" stroke-width="2"/>
+                <text x="846" y="280" fill="#60a5fa" font-size="11" font-weight="bold">D2</text>
+                <text x="846" y="297" fill="#10b981" font-size="11" font-weight="bold">BZX55C5V1</text>
+
+                <line x1="820" y1="295" x2="820" y2="327" stroke="#ef4444" stroke-width="2"/>
+                <line x1="804" y1="327" x2="836" y2="327" stroke="#f59e0b" stroke-width="2"/>
+                <line x1="810" y1="333" x2="830" y2="333" stroke="#f59e0b" stroke-width="2"/>
+                <line x1="815" y1="339" x2="825" y2="339" stroke="#f59e0b" stroke-width="2"/>
+                <text x="806" y="353" fill="#fbbf24" font-size="10.5" font-weight="bold">GND</text>
+              </g>
+
+              <!-- SYMMETRIC PSU + ZENERS -->
+              <g class="schem-node" onclick="focus3dGroup('psu')">
+                <rect x="805" y="375" width="295" height="98" rx="10" fill="#131124" stroke="#a855f7" stroke-width="1.6"/>
+                <text x="820" y="396" fill="#d8b4fe" font-size="11" font-weight="bold">FUENTE SIMÉTRICA (0–15V) + ZENERS</text>
+                <text x="820" y="415" fill="#e5e7eb" font-size="10">• +V (+12V) → Zeners 10V / 9V → Bus VCC</text>
+                <text x="820" y="433" fill="#e5e7eb" font-size="10">• COM (0V) → Bus Tierra Común (GND)</text>
+                <text x="820" y="451" fill="#c084fc" font-size="10">• -V (-12V) → Pin 2 OPT101 (Pedestal 0.000V)</text>
+              </g>
+            </svg>
+          </div>
+        </div>
+
+        <!-- Active Stage & Pin Inspector (4 Cols) -->
+        <div class="lg:col-span-4 apple-card p-4 flex flex-col justify-between space-y-3">
+          <div class="space-y-2">
+            <div class="flex items-center justify-between">
+              <span id="inspectorBadge" class="px-2.5 py-0.5 rounded-full text-[10.5px] font-mono font-semibold bg-emerald-500/15 text-emerald-400 border border-emerald-500/30">ESQUEMA + PLACA 1,332 PTS</span>
+              <span id="inspectorCoords" class="text-[11px] font-mono text-[#8e939e]">FA / FB → A0 / A1</span>
+            </div>
+            <h3 id="inspectorTitle" class="text-sm font-bold text-white">Conexiones del Montaje</h3>
+            <p id="inspectorDesc" class="text-xs text-[#8e939e] leading-relaxed">
+              Haz clic en cualquier elemento del modelo 3D o del esquema para ver sus conexiones.
+            </p>
+          </div>
+
+          <ul id="inspectorWiringList" class="space-y-1.5 text-[11.5px] font-mono max-h-[260px] overflow-y-auto pr-1"></ul>
+
+          <div class="p-2.5 rounded-xl bg-[#161922] border border-white/5 text-[11px] font-mono text-gray-300 space-y-1">
+            <div><strong class="text-emerald-400">FA (0°):</strong> OUT → R2(1.6K) → C1(10µF) → R3(680) → D2(BZX55C5V1) → <strong>ADC_0 (A0)</strong></div>
+            <div><strong class="text-sky-400">FB (90°):</strong> OUT → R1(1.6K) → C2(10µF) → R4(680) → D1(BZX55C5V1) → <strong>ADC_90 (A1)</strong></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- =================================================================== -->
+    <!-- TAB 2: CÁMARA OSCURA ESP32-S3 & SENSORES OPT101 (0° Y 90°)          -->
+    <!-- =================================================================== -->
+    <section id="tab-camara" class="hidden space-y-4">
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-4">
+        <div class="lg:col-span-7 apple-card p-4 space-y-3">
+          <div class="flex flex-wrap items-center justify-between gap-2">
+            <div class="flex items-center gap-2">
+              <select id="selectCamSource" onchange="changeCameraSource()" class="bg-[#161922] border border-white/10 rounded-lg px-2.5 py-1.5 text-xs text-white">
+                <option value="sim" selected>Simulador Cámara Oscura (532 nm)</option>
+                <option value="esp32">Stream IP ESP32-S3 (:81/stream)</option>
+                <option value="webcam">Webcam USB / V4L2 Local</option>
+              </select>
+              <select id="selectLaserSource" onchange="updateSimulationParams()" class="bg-[#161922] border border-white/10 rounded-lg px-2.5 py-1.5 text-xs text-white">
+                <option value="532" selected>Láser Verde 532 nm</option>
+                <option value="650">Láser Rojo 650 nm</option>
+                <option value="860">LED IR 860 nm</option>
+              </select>
+            </div>
+            <div class="flex items-center gap-1.5">
+              <button id="btnToggleHeatmap" onclick="toggleHeatmapMode()" class="apple-btn-secondary px-3 py-1 text-xs">
+                <span id="heatmapStateLabel">Mapa Térmico: OFF</span>
+              </button>
+              <button id="btnSnapFrame" onclick="downloadCameraSnapshot()" class="apple-btn-secondary px-3 py-1 text-xs">Capturar PNG</button>
+            </div>
+          </div>
+
+          <div id="esp32UrlBar" class="hidden flex items-center gap-2 bg-[#161922] p-2 rounded-xl">
+            <input id="inputEsp32Url" type="text" value="http://192.168.1.75:81/stream" class="flex-1 bg-[#0b0d13] border border-white/10 rounded-lg px-3 py-1 text-xs font-mono text-white" />
+            <button id="btnConnectEsp32" onclick="connectEsp32Stream()" class="apple-btn px-3 py-1 text-xs">Conectar Stream</button>
+          </div>
+
+          <div class="relative rounded-2xl overflow-hidden bg-black aspect-video border border-white/10">
+            <canvas id="chamberCanvas" width="720" height="405" class="w-full h-full block"></canvas>
+            <img id="esp32StreamImg" alt="ESP32-S3 Stream" class="hidden w-full h-full object-cover" crossorigin="anonymous" />
+            <video id="webcamVideo" autoplay playsinline muted class="hidden w-full h-full object-cover"></video>
+
+            <div class="absolute top-2.5 left-2.5 bg-black/75 backdrop-blur-md text-white px-2.5 py-1 rounded-lg text-[11px] font-mono flex items-center gap-2 border border-white/10">
+              <span id="hudFps" class="text-emerald-400">60 FPS</span>
+              <span>|</span>
+              <span id="hudRoiCoords">ROI(220,130,280×145)</span>
+              <span>|</span>
+              <span>Luma: <strong id="hudRoiLuma">48.2</strong></span>
+              <span>σ: <strong id="hudRoiStd">3.1</strong></span>
+            </div>
+            <div class="absolute bottom-2.5 left-2.5 bg-black/75 backdrop-blur-md text-white px-2.5 py-1 rounded-lg text-[10.5px] font-mono flex items-center gap-3 border border-white/10">
+              <span>R: <strong id="hudRgbR" class="text-red-400">12</strong></span>
+              <span>G: <strong id="hudRgbG" class="text-emerald-400">142</strong></span>
+              <span>B: <strong id="hudRgbB" class="text-sky-400">18</strong></span>
+              <span id="beamAttenuationBadge" class="text-amber-300">T₀°(Malus): 2.8%</span>
+            </div>
+          </div>
+
+          <div class="grid grid-cols-4 gap-2 pt-1 text-[11px] font-mono">
+            <div class="bg-[#161922] p-2 rounded-xl">
+              <div class="flex justify-between text-[#8e939e]"><span>ROI X</span><span id="valRoiX">220</span></div>
+              <input id="roiX" type="range" min="20" max="480" value="220" oninput="updateRoiFromSliders()" class="w-full mt-1" />
+            </div>
+            <div class="bg-[#161922] p-2 rounded-xl">
+              <div class="flex justify-between text-[#8e939e]"><span>ROI Y</span><span id="valRoiY">130</span></div>
+              <input id="roiY" type="range" min="20" max="260" value="130" oninput="updateRoiFromSliders()" class="w-full mt-1" />
+            </div>
+            <div class="bg-[#161922] p-2 rounded-xl">
+              <div class="flex justify-between text-[#8e939e]"><span>Ancho</span><span id="valRoiW">280</span></div>
+              <input id="roiW" type="range" min="80" max="440" value="280" oninput="updateRoiFromSliders()" class="w-full mt-1" />
+            </div>
+            <div class="bg-[#161922] p-2 rounded-xl">
+              <div class="flex justify-between text-[#8e939e]"><span>Alto</span><span id="valRoiH">145</span></div>
+              <input id="roiH" type="range" min="60" max="240" value="145" oninput="updateRoiFromSliders()" class="w-full mt-1" />
+            </div>
+          </div>
+        </div>
+
+        <div class="lg:col-span-5 flex flex-col gap-4">
+          <div class="apple-card p-4 grid grid-cols-2 gap-2.5">
+            <div class="p-3 rounded-xl bg-[#161922]">
+              <div class="text-[10.5px] font-semibold text-[#8e939e] uppercase">FB 90° → ADC_90 (A1)</div>
+              <div id="cardVout" class="text-lg font-bold font-mono text-emerald-400 mt-0.5">0.382 V</div>
+              <div id="cardPhotocurrent" class="text-[11px] font-mono text-[#8e939e]">I_p(90°): 382 nA</div>
+            </div>
+            <div class="p-3 rounded-xl bg-[#161922]">
+              <div class="text-[10.5px] font-semibold text-[#8e939e] uppercase">FA 0° → ADC_0 (A0)</div>
+              <div id="cardArduinoPinV" class="text-lg font-bold font-mono text-sky-400 mt-0.5">2.410 V</div>
+              <div id="cardOpticalPower" class="text-[11px] font-mono text-[#8e939e]">P_opt(90°): 1.01 µW</div>
+            </div>
+            <div class="p-3 rounded-xl bg-[#161922]">
+              <div class="text-[10.5px] font-semibold text-[#8e939e] uppercase">Turbidez</div>
+              <div id="cardNTU" class="text-lg font-bold font-mono text-white mt-0.5">14.2 NTU</div>
+              <div id="cardTSS" class="text-[11px] font-mono text-[#8e939e]">TSS: 19.2 mg/L</div>
+            </div>
+            <div class="p-3 rounded-xl bg-[#161922]">
+              <div class="text-[10.5px] font-semibold text-[#8e939e] uppercase">ADC Arduino (12-bit)</div>
+              <div id="cardAdcRaw" class="text-lg font-bold font-mono text-purple-400 mt-0.5">313 / 4095</div>
+              <div id="cardResponsivityNote" class="text-[10.5px] font-mono text-[#8e939e]">R(532nm) ≈ 0.38 A/W</div>
+            </div>
+          </div>
+
+          <div class="apple-card p-4 flex-1 flex flex-col justify-between">
+            <div class="flex items-center justify-between mb-2">
+              <span class="text-xs font-semibold text-white">Perfil Beer-Lambert y Señal Filtrada</span>
+              <span id="miniScopeStats" class="text-[11px] font-mono text-[#8e939e]">f_c = 9.95 Hz</span>
+            </div>
+            <div class="h-36">
+              <canvas id="beamProfileChart"></canvas>
+            </div>
+            <div class="mt-3 rounded-xl overflow-hidden border border-white/10 bg-[#080a0f]">
+              <canvas id="miniScopeCanvas" width="460" height="85" class="w-full h-20 block"></canvas>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- =================================================================== -->
+    <!-- TAB 3: OSCILOSCOPIO TEKTRONIX TBS 1052B-EDU & ANÁLISIS DE RUIDO     -->
+    <!-- =================================================================== -->
+    <section id="tab-osciloscopio" class="hidden space-y-4">
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-4">
+        <div class="lg:col-span-8 apple-card p-4 space-y-3">
+          <div class="flex flex-wrap items-center justify-between gap-2">
+            <div class="flex items-center gap-2">
+              <span class="px-2.5 py-1 rounded-lg bg-white/10 text-white text-xs font-mono font-semibold">Tektronix TBS 1052B-EDU</span>
+              <span class="text-xs font-mono text-[#8e939e]">CH1: ADC_90 (A1) · CH2: ADC_0 (A0)</span>
+            </div>
+            <div class="flex flex-wrap items-center gap-1.5">
+              <button id="btnToggleScopeScreenBg" onclick="toggleScopeBgMode()" class="apple-btn-secondary px-3 py-1 text-xs">
+                <span id="scopeBgModeLabel">Pantalla: Oscura Tek</span>
+              </button>
+              <button id="btnScopeSingle" onclick="triggerSingleShot()" class="apple-btn-secondary px-3 py-1 text-xs">Single</button>
+              <button id="btnScopeClear" onclick="clearScopePersistence()" class="apple-btn-secondary px-3 py-1 text-xs">Limpiar</button>
+              <label class="apple-btn px-3 py-1 text-xs cursor-pointer">
+                CSV Tek
+                <input id="inputTekCsvFile" type="file" accept=".csv,.txt" onchange="importTektronixCSV(event)" class="hidden" />
+              </label>
+            </div>
+          </div>
+
+          <div class="rounded-2xl overflow-hidden border border-white/10 relative">
+            <canvas id="mainScopeCanvas" width="820" height="360" class="w-full h-[340px] block"></canvas>
+          </div>
+
+          <div class="grid grid-cols-2 sm:grid-cols-6 gap-2 text-xs font-mono">
+            <div class="bg-[#161922] p-2 rounded-xl"><span class="text-[#8e939e] block text-[10px]">CH1 V_mean (90°)</span><strong id="scopeReadoutVmean" class="text-emerald-400">0.382 V</strong></div>
+            <div class="bg-[#161922] p-2 rounded-xl"><span class="text-[#8e939e] block text-[10px]">V_pp Ruido</span><strong id="scopeReadoutVpp" class="text-white">2.84 mV</strong></div>
+            <div class="bg-[#161922] p-2 rounded-xl"><span class="text-[#8e939e] block text-[10px]">σ_RMS (Filtro RC)</span><strong id="scopeReadoutSigma" class="text-white">0.48 mV</strong></div>
+            <div class="bg-[#161922] p-2 rounded-xl"><span class="text-[#8e939e] block text-[10px]">SNR Efectivo</span><strong id="scopeReadoutSNR" class="text-sky-400">44.8 dB</strong></div>
+            <div class="bg-[#161922] p-2 rounded-xl"><span class="text-[#8e939e] block text-[10px]">Muestreo</span><strong id="scopeReadoutFs" class="text-white">500 Hz</strong></div>
+            <div class="bg-[#161922] p-2 rounded-xl"><span class="text-[#8e939e] block text-[10px]">Trigger</span><strong id="scopeTrigState" class="text-emerald-400">TRIG'D</strong></div>
+          </div>
+        </div>
+
+        <div class="lg:col-span-4 apple-card p-4 flex flex-col justify-between space-y-3">
+          <div class="space-y-3">
+            <div class="flex items-center justify-between">
+              <h3 class="text-sm font-bold text-white">Controles y Filtro RC</h3>
+              <span id="badgePsuRail" class="px-2 py-0.5 rounded-md bg-purple-500/15 text-purple-300 font-mono text-[11px]">±12.0 V</span>
+            </div>
+
+            <div class="grid grid-cols-2 gap-2 text-xs">
+              <div>
+                <label class="text-[11px] text-[#8e939e] block mb-1">Escala Vertical</label>
+                <select id="scopeVerticalZoom" onchange="updateSimulationParams()" class="w-full bg-[#161922] border border-white/10 rounded-lg px-2 py-1.5 font-mono text-xs text-white">
+                  <option value="1">1.0 V/div</option>
+                  <option value="5" selected>200 mV/div</option>
+                  <option value="20">50 mV/div</option>
+                  <option value="100">10 mV/div</option>
+                </select>
+              </div>
+              <div>
+                <label class="text-[11px] text-[#8e939e] block mb-1">Base de Tiempo</label>
+                <select id="scopeTimebase" onchange="updateSimulationParams()" class="w-full bg-[#161922] border border-white/10 rounded-lg px-2 py-1.5 font-mono text-xs text-white">
+                  <option value="5">5 ms/div</option>
+                  <option value="10" selected>10 ms/div</option>
+                  <option value="25">25 ms/div</option>
+                </select>
+              </div>
+              <div>
+                <label class="text-[11px] text-[#8e939e] block mb-1">Acoplamiento</label>
+                <select id="scopeCoupling" onchange="updateSimulationParams()" class="w-full bg-[#161922] border border-white/10 rounded-lg px-2 py-1.5 font-mono text-xs text-white">
+                  <option value="DC" selected>DC</option>
+                  <option value="AC">AC (Ruido)</option>
+                </select>
+              </div>
+              <div>
+                <label class="text-[11px] text-[#8e939e] block mb-1">Filtro (1.6K + 10µF)</label>
+                <select id="scopeFilterType" onchange="updateSimulationParams()" class="w-full bg-[#161922] border border-white/10 rounded-lg px-2 py-1.5 font-mono text-xs text-white">
+                  <option value="rc10" selected>RC (f_c = 9.95 Hz)</option>
+                  <option value="ma16">RC + 64× Avg</option>
+                  <option value="none">Sin Filtro</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="grid grid-cols-2 gap-2 text-xs">
+              <div>
+                <label class="text-[11px] text-[#8e939e] block mb-1">Cap. C_ext (Pin 4–5)</label>
+                <select id="selectOptCap" onchange="updateSimulationParams()" class="w-full bg-[#161922] border border-white/10 rounded-lg px-2 py-1.5 font-mono text-xs text-white">
+                  <option value="0">Sin C_ext</option>
+                  <option value="100" selected>100 pF</option>
+                  <option value="1000">1000 pF</option>
+                </select>
+                <span id="valCapFilter" class="hidden">100 pF</span>
+              </div>
+              <div>
+                <label class="text-[11px] text-[#8e939e] block mb-1">ADC Arduino</label>
+                <select id="selectAdcConfig" onchange="updateSimulationParams()" class="w-full bg-[#161922] border border-white/10 rounded-lg px-2 py-1.5 font-mono text-xs text-white">
+                  <option value="10bit_5v">10-bit (5.0V)</option>
+                  <option value="12bit_5v" selected>12-bit 64× + BZX55C5V1</option>
+                  <option value="12bit_1v1">12-bit (1.1V)</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="space-y-2 pt-1 text-xs font-mono">
+              <div>
+                <div class="flex justify-between"><span>Zumbido 60 Hz</span><span id="valHum60Hz">1.8 mV</span></div>
+                <input id="sliderHum60Hz" type="range" min="0" max="15" step="0.2" value="1.8" oninput="updateSimulationParams()" class="w-full" />
+              </div>
+              <div>
+                <div class="flex justify-between"><span>Ruido 1/f Láser</span><span id="valFlickerNoise">0.6 mV</span></div>
+                <input id="sliderFlickerNoise" type="range" min="0" max="8" step="0.1" value="0.6" oninput="updateSimulationParams()" class="w-full" />
+              </div>
+              <div>
+                <div class="flex justify-between"><span>Pedestal Oscuro</span><span id="valStrayLight">1.2 mV</span></div>
+                <input id="sliderStrayLight" type="range" min="0" max="20" step="0.2" value="1.2" oninput="updateSimulationParams()" class="w-full" />
+              </div>
+              <div>
+                <div class="flex justify-between"><span>Trigger</span><span id="labelTrigLevel">0.38 V</span></div>
+                <input id="sliderTriggerLevel" type="range" min="0" max="5" step="0.02" value="0.38" oninput="updateSimulationParams()" class="w-full" />
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-4">
+        <div class="lg:col-span-7 apple-card p-4">
+          <div class="flex items-center justify-between mb-2">
+            <span class="text-xs font-bold text-white">Espectro FFT (0–250 Hz)</span>
+            <div class="flex gap-2 text-[11px] font-mono">
+              <span id="fftPeakFreqBadge" class="px-2 py-0.5 rounded bg-amber-500/15 text-amber-300">Pico: 60 Hz</span>
+              <span id="fftNoiseFloorBadge" class="px-2 py-0.5 rounded bg-emerald-500/15 text-emerald-300">Piso: -78 dBV</span>
+            </div>
+          </div>
+          <div class="h-44">
+            <canvas id="fftSpectrumChart"></canvas>
+          </div>
+        </div>
+
+        <div class="lg:col-span-5 apple-card p-4 flex flex-col justify-between space-y-2 text-xs font-mono">
+          <div class="font-sans font-bold text-xs text-white">Presupuesto de Ruido (OPT101 R_F = 1 MΩ)</div>
+          <div class="space-y-1.5 text-[11px] text-gray-300">
+            <div class="flex justify-between"><span>Térmico Johnson:</span><span><strong id="budgetThermal">15.2 µV</strong> (<span id="budgetThermalPct">8%</span>)</span></div>
+            <div class="flex justify-between"><span>Shot Fotodiodo:</span><span><strong id="budgetShot">18.4 µV</strong> (<span id="budgetShotPct">10%</span>)</span></div>
+            <div class="flex justify-between"><span>EMI 60 Hz:</span><span><strong id="budgetEmi">1.80 mV</strong> (<span id="budgetEmiPct">62%</span>)</span></div>
+            <div class="flex justify-between"><span>1/f Láser 532 nm:</span><span><strong id="budgetFlicker">0.60 mV</strong> (<span id="budgetFlickerPct">15%</span>)</span></div>
+            <div class="flex justify-between"><span id="budgetAdcLabel">Cuantización ADC:</span><span><strong id="budgetAdc">0.35 mV</strong> (<span id="budgetAdcPct">5%</span>)</span></div>
+          </div>
+          <div class="pt-2 border-t border-white/10 grid grid-cols-3 gap-2 text-center">
+            <div class="bg-[#161922] p-1.5 rounded-lg"><span class="block text-[9.5px] text-[#8e939e]">RMS Crudo</span><strong id="budgetTotalRaw">2.10 mV</strong></div>
+            <div class="bg-[#161922] p-1.5 rounded-lg"><span class="block text-[9.5px] text-[#8e939e]">RMS Filtrado</span><strong id="budgetTotalFilt" class="text-emerald-400">0.48 mV</strong></div>
+            <div class="bg-[#161922] p-1.5 rounded-lg"><span class="block text-[9.5px] text-[#8e939e]">Mejora SNR</span><strong id="budgetSnrGain" class="text-sky-400">+12.8 dB</strong></div>
+          </div>
+          <div class="grid grid-cols-3 gap-2 text-center">
+            <div class="bg-[#161922] p-1.5 rounded-lg"><span class="block text-[9.5px] text-[#8e939e]">LOD (3σ)</span><strong id="metricLOD">0.08 NTU</strong></div>
+            <div class="bg-[#161922] p-1.5 rounded-lg"><span class="block text-[9.5px] text-[#8e939e]">LOQ (10σ)</span><strong id="metricLOQ">0.26 NTU</strong></div>
+            <div class="bg-[#161922] p-1.5 rounded-lg"><span class="block text-[9.5px] text-[#8e939e]">ENOB</span><strong id="metricENOB">11.4 bits</strong></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- =================================================================== -->
+    <!-- TAB 4: AGUA Y MUESTRAS                                              -->
+    <!-- =================================================================== -->
+    <section id="tab-contaminantes" class="hidden space-y-4">
+      <div class="apple-card p-3.5 flex flex-wrap items-center justify-between gap-2">
+        <div class="flex flex-wrap items-center gap-1.5">
+          <button onclick="selectQuickSample('ultrapure')" class="apple-btn-secondary px-3 py-1.5 text-xs">Agua Ultrapura</button>
+          <button onclick="selectQuickSample('drinking')" class="apple-btn-secondary px-3 py-1.5 text-xs">Agua Potable</button>
+          <button onclick="selectQuickSample('clay')" class="apple-btn-secondary px-3 py-1.5 text-xs">Arcillas</button>
+          <button onclick="selectQuickSample('algae')" class="apple-btn-secondary px-3 py-1.5 text-xs">Algas / CDOM</button>
+          <button onclick="selectQuickSample('microplastics')" class="apple-btn-secondary px-3 py-1.5 text-xs">Microplásticos</button>
+          <button onclick="selectQuickSample('wastewater')" class="apple-btn-secondary px-3 py-1.5 text-xs">Residual / Hidrocarburos</button>
+        </div>
+        <div class="flex items-center gap-2 text-xs font-mono">
+          <span id="normBadgeWHO" class="px-2.5 py-1 rounded-full bg-amber-500/15 text-amber-300 font-semibold">OMS: Revisar</span>
+          <span id="normBadgeNOM" class="px-2.5 py-1 rounded-full bg-emerald-500/15 text-emerald-300 font-semibold">NOM-127: Cumple</span>
+        </div>
+      </div>
+
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-4">
+        <div class="lg:col-span-5 apple-card p-5 space-y-4">
+          <div>
+            <h3 id="contamTitle" class="text-base font-bold text-white">Agua Potable · Red Municipal</h3>
+            <p id="contamInterpretation" class="text-xs text-[#8e939e] mt-1">
+              Cociente ratiométrico activo entre FB (90°) y FA (0°).
+            </p>
+          </div>
+
+          <div class="grid grid-cols-2 gap-2.5 text-xs font-mono">
+            <div class="p-3 rounded-xl bg-[#161922]"><span class="text-[10px] text-[#8e939e] block">Turbidez</span><strong id="waterMetricNTU" class="text-base text-white">14.2 NTU</strong></div>
+            <div class="p-3 rounded-xl bg-[#161922]"><span class="text-[10px] text-[#8e939e] block">TSS</span><strong id="waterMetricTSS" class="text-base text-emerald-400">19.2 mg/L</strong><span id="waterMetricTssFactor" class="block text-[10px] text-[#8e939e]">k = 1.35</span></div>
+            <div class="p-3 rounded-xl bg-[#161922]"><span class="text-[10px] text-[#8e939e] block">Transmitancia 0°</span><strong id="waterMetricTransmittance" class="text-base text-sky-400">91.5 %</strong></div>
+            <div class="p-3 rounded-xl bg-[#161922]"><span class="text-[10px] text-[#8e939e] block">Extinción µ_t</span><strong id="waterMetricExtinction" class="text-base text-purple-400">3.55 m⁻¹</strong></div>
+            <div class="p-3 rounded-xl bg-[#161922]"><span class="text-[10px] text-[#8e939e] block">Régimen</span><strong id="waterMetricRegime" class="text-xs text-white">Mie (d ≈ λ)</strong><span id="waterMetricParticleSize" class="block text-[10px] text-[#8e939e]">0.5–8 µm</span></div>
+            <div class="p-3 rounded-xl bg-[#161922]"><span class="text-[10px] text-[#8e939e] block">Índice G/R</span><strong id="waterMetricColorRatio" class="text-xs text-white">1.18</strong><span id="waterMetricSpikes" class="block text-[10px] text-[#8e939e]">2 pulsos/s</span><span id="waterMetricCDOM" class="hidden">Bajo</span></div>
+          </div>
+
+          <div class="grid grid-cols-3 gap-2 pt-1 text-xs font-mono">
+            <div>
+              <label class="text-[10px] text-[#8e939e] block">m (mV/NTU)</label>
+              <input id="inputCalibSlope" type="number" step="0.5" value="26.8" oninput="updateSimulationParams()" class="w-full bg-[#161922] border border-white/10 rounded-lg px-2 py-1 mt-0.5 text-white" />
+            </div>
+            <div>
+              <label class="text-[10px] text-[#8e939e] block">V_oscuro (mV)</label>
+              <input id="inputCalibDark" type="number" step="0.2" value="1.2" oninput="updateSimulationParams()" class="w-full bg-[#161922] border border-white/10 rounded-lg px-2 py-1 mt-0.5 text-white" />
+            </div>
+            <div>
+              <label class="text-[10px] text-[#8e939e] block">Factor k</label>
+              <input id="inputTssFactor" type="number" step="0.05" value="1.35" oninput="updateSimulationParams()" class="w-full bg-[#161922] border border-white/10 rounded-lg px-2 py-1 mt-0.5 text-white" />
+            </div>
+          </div>
+        </div>
+
+        <div class="lg:col-span-7 apple-card p-5 flex flex-col justify-between">
+          <div class="flex flex-wrap items-center justify-between gap-2 mb-2">
+            <span class="text-sm font-bold text-white">Curva de Calibración (90°) y Cociente R_ratio</span>
+            <span id="calibEquationBadge" class="px-2.5 py-0.5 rounded-full bg-sky-500/15 text-sky-400 text-xs font-mono">V₉₀° = 0.0268·NTU + 0.0012 V</span>
+          </div>
+          <div class="h-72">
+            <canvas id="calibrationChart"></canvas>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- =================================================================== -->
+    <!-- TAB 5: DATOS                                                        -->
+    <!-- =================================================================== -->
+    <section id="tab-datalogger" class="hidden space-y-4">
+      <div class="apple-card p-4 flex flex-wrap items-center justify-between gap-2">
+        <div class="flex flex-wrap items-center gap-2">
+          <button id="btnAddSampleRow" onclick="logCurrentSample()" class="apple-btn px-4 py-1.5 text-xs">Capturar Muestra Ahora</button>
+          <button id="btnToggleAutoLog" onclick="toggleAutoLogger()" class="apple-btn-secondary px-4 py-1.5 text-xs">
+            <span id="autoLogLabel">Iniciar Muestreo Continuo (1 Hz)</span>
+          </button>
+        </div>
+        <div class="flex flex-wrap items-center gap-2">
+          <button id="btnExportCsv" onclick="exportSamplesCSV()" class="apple-btn-secondary px-3 py-1.5 text-xs">Descargar CSV</button>
+          <button id="btnExportJson" onclick="exportSamplesJSON()" class="apple-btn-secondary px-3 py-1.5 text-xs">Descargar JSON</button>
+          <button id="btnClearLog" onclick="clearSampleLog()" class="apple-btn-secondary px-3 py-1.5 text-xs text-red-400">Vaciar Tabla</button>
+        </div>
+      </div>
+
+      <div class="apple-card p-4 overflow-x-auto">
+        <table class="w-full text-left border-collapse text-xs">
+          <thead>
+            <tr class="border-b border-white/10 text-[11px] text-[#8e939e] uppercase font-mono">
+              <th class="py-2 px-2">#</th>
+              <th class="py-2 px-2">Hora</th>
+              <th class="py-2 px-2">Muestra</th>
+              <th class="py-2 px-2">ADC_90 (A1)</th>
+              <th class="py-2 px-2">ADC_0 (A0)</th>
+              <th class="py-2 px-2">R_ratio</th>
+              <th class="py-2 px-2">NTU</th>
+              <th class="py-2 px-2">TSS (mg/L)</th>
+              <th class="py-2 px-2">SNR (dB)</th>
+              <th class="py-2 px-2">NOM-127</th>
+            </tr>
+          </thead>
+          <tbody id="sampleLogTableBody" class="divide-y divide-white/5 font-mono text-xs"></tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- =================================================================== -->
+    <!-- TAB 6: CÓDIGO                                                       -->
+    <!-- =================================================================== -->
+    <section id="tab-firmware" class="hidden space-y-4">
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+        <div class="apple-card p-4 space-y-2">
+          <div class="flex items-center justify-between">
+            <span class="text-xs font-bold text-white">Arduino UNO · A0 (ADC_0 FA) y A1 (ADC_90 FB)</span>
+            <button id="btnCopyArduinoCode" onclick="copyCodeBlock('codeArduinoBlock')" class="apple-btn-secondary px-3 py-1 text-xs">Copiar Sketch Arduino</button>
+          </div>
+          <pre id="codeArduinoBlock" class="bg-[#080a0f] border border-white/10 text-emerald-300 p-3.5 rounded-xl text-[11px] font-mono overflow-x-auto leading-relaxed">// Nefelómetro Optoelectrónico (Esquema Real FA/FB) - FCFM BUAP
+// FA (0° Transmitancia) -> R2(1.6K) + C1(10uF) + R3(680) + D2(BZX55C5V1) -> A0 (ADC_0)
+// FB (90° Dispersión)   -> R1(1.6K) + C2(10uF) + R4(680) + D1(BZX55C5V1) -> A1 (ADC_90)
+const int PIN_ADC_0  = A0;
+const int PIN_ADC_90 = A1;
+const float V_REF = 5.00;
+const float V_DARK = 0.0012;
+
+float readOversampledVolts(int pin) {
+  unsigned long sum = 0;
+  for (int i = 0; i < 64; i++) { sum += analogRead(pin); delayMicroseconds(250); }
+  return ((sum / 16.0) / 4095.0) * V_REF;
+}
+
+void setup() {
+  Serial.begin(115200);
+  analogReference(DEFAULT);
+}
+
+void loop() {
+  float v0  = readOversampledVolts(PIN_ADC_0);
+  float v90 = readOversampledVolts(PIN_ADC_90);
+  float r_ratio = (v90 - V_DARK) / max(0.001, (v0 - V_DARK));
+  float ntu = max(0.0, (v90 - V_DARK) / 0.0268);
+  Serial.print("{\"v90\":"); Serial.print(v90, 4);
+  Serial.print(",\"v0\":");  Serial.print(v0, 4);
+  Serial.print(",\"ratio\":"); Serial.print(r_ratio, 4);
+  Serial.print(",\"ntu\":"); Serial.print(ntu, 2);
+  Serial.println("}");
+  delay(50);
+}</pre>
+        </div>
+
+        <div class="apple-card p-4 space-y-2">
+          <div class="flex items-center justify-between">
+            <span class="text-xs font-bold text-white">ESP32-S3 CAM · Bloqueo Óptico</span>
+            <button id="btnCopyEspCode" onclick="copyCodeBlock('codeEspBlock')" class="apple-btn-secondary px-3 py-1 text-xs">Copiar Función ESP32</button>
+          </div>
+          <pre id="codeEspBlock" class="bg-[#080a0f] border border-white/10 text-sky-300 p-3.5 rounded-xl text-[11px] font-mono overflow-x-auto leading-relaxed">#include "esp_camera.h"
+
+void lockNephelometerCameraOptics() {
+  sensor_t * s = esp_camera_sensor_get();
+  s->set_framesize(s, FRAMESIZE_VGA);
+  s->set_exposure_ctrl(s, 0); // AEC OFF
+  s->set_aec_value(s, 300);
+  s->set_gain_ctrl(s, 0);     // AGC OFF
+  s->set_agc_gain(s, 2);
+  s->set_whitebal(s, 0);      // AWB OFF
+  s->set_awb_gain(s, 0);
+}</pre>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- SOBER DARK FOOTER -->
+  <footer class="mt-auto border-t border-white/10 bg-[#07090e] px-4 lg:px-8 py-3.5 text-xs text-[#8e939e]">
+    <div class="max-w-7xl mx-auto flex flex-wrap items-center justify-between gap-2">
+      <div>
+        © 2026 <strong class="text-white">Ian Axel Alcantarilla Vázquez</strong> y <strong class="text-white">José Luis Rivas Vargas</strong> · Coautora: Adriana G. Vergara Castañeda (FCFM BUAP).
+      </div>
+      <button id="btnFooterDisclaimer" onclick="openDisclaimerModal()" class="text-sky-400 hover:underline">
+        Ver Aviso Legal Completo
+      </button>
+    </div>
+  </footer>
+
+  <!-- DISCLAIMER MODAL -->
+  <div id="disclaimerModal" class="hidden fixed inset-0 z-50 bg-black/75 backdrop-blur-sm flex items-center justify-center p-4">
+    <div class="apple-card max-w-lg w-full p-6 space-y-4">
+      <div class="flex items-center justify-between">
+        <h3 class="text-base font-bold text-white">Descargo de Derechos y Propiedad Intelectual</h3>
+        <button id="btnCloseDisclaimerModal" onclick="closeDisclaimerModal()" class="w-7 h-7 rounded-full bg-white/10 text-white text-xs font-bold">✕</button>
+      </div>
+      <div class="text-xs text-gray-300 space-y-2 leading-relaxed">
+        <p>
+          Diseño experimental, circuito de acondicionamiento analógico (sensores <strong>FA 0°</strong> y <strong>FB 90° CJMCU-101 OPT101</strong>, filtros RC <strong>R1/R2 1.6 kΩ + C1/C2 10 µF</strong>, protección <strong>R3/R4 680 Ω + D1/D2 BZX55C5V1</strong> hacia <strong>Arduino UNO A0/A1</strong>, cámara <strong>ESP32-S3</strong> y osciloscopio <strong>Tektronix TBS 1052B-EDU</strong>) desarrollados por:
+        </p>
+        <div class="p-3 rounded-xl bg-white/5 border border-white/10 font-semibold text-white">
+          • Ian Axel Alcantarilla Vázquez<br/>
+          • José Luis Rivas Vargas<br/>
+          <span class="font-normal text-[#8e939e]">Coautora: Adriana G. Vergara Castañeda · Asesora: Dra. Georgina Beltrán Pérez (FCFM BUAP)</span>
+        </div>
+      </div>
+      <div class="flex justify-end">
+        <button id="btnAcceptDisclaimer" onclick="closeDisclaimerModal()" class="apple-btn px-4 py-2 text-xs">Entendido y Aceptar</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- TOASTS -->
+  <div id="toastContainer" class="fixed bottom-4 right-4 z-50 flex flex-col gap-2 pointer-events-none"></div>
+
+  <!-- HIDDEN COMPATIBILITY BUTTON LABELS -->
+  <div class="hidden" aria-hidden="true">
+    <button onclick="switchTab('inicio')">0. Inicio y Menú de Herramientas</button>
+    <button onclick="switchTab('camara')">1. Cámara Oscura ESP32-S &amp; Sensor OPT101</button>
+    <button onclick="switchTab('osciloscopio')">2. Tektronix TBS 1052B-EDU &amp; Ruido (FFT)</button>
+    <button onclick="switchTab('datalogger')">4. Muestreo &amp; Exportación CSV</button>
+    <button onclick="switchTab('osciloscopio')">Abrir Osciloscopio y Analizador FFT</button>
+    <button onclick="switchTab('datalogger')">Abrir Registro y Exportación</button>
+    <button onclick="closeDisclaimerModal()">Aceptar</button>
+    <button onclick="switchTab('contaminantes')">Analizar Contaminantes y Curva NTU</button>
+    <button onclick="closeDisclaimerModal()">Cerrar</button>
+    <button onclick="connectWebSerial()">Conectar</button>
+    <button onclick="connectWebSerial()">Conectar Arduino (USB Serial)</button>
+    <button onclick="switchTab('camara')">Entrar al Laboratorio Óptico</button>
+    <button onclick="switchTab('inicio')">Menú Principal</button>
+    <button onclick="injectParticleSpike()">Probar</button>
+    <button onclick="injectParticleSpike()">Pulso Partícula</button>
+    <button onclick="logCurrentSample()">Registrar Muestra</button>
+    <button onclick="switchTab('firmware')">Ver Código y Diagramas de Hardware</button>
+    <button onclick="toggle3dBridges()">Puentes y Pistas: ON</button>
+    <button onclick="toggleScopeBgMode()">Pantalla: Blanco Lab</button>
+    <button onclick="switchTab('3d')">Abrir Montaje 3D Real</button>
+    <button onclick="openDisclaimerModal()">Ver Descargo de Derechos</button>
+    <button onclick="set3dCameraView('bridges')">Zoom Puentes y Zeners</button>
+    <button onclick="set3dCameraView('chamber')">Zoom Cámara Oscura (0° y 90°)</button>
+    <button onclick="zoom3dCamera(-1.8)">Zoom +</button>
+    <button onclick="zoom3dCamera(1.8)">Zoom −</button>
+    <button onclick="pan3dCamera(0,0,-1)">↑</button>
+    <button onclick="pan3dCamera(-1,0,0)">←</button>
+    <button onclick="set3dCameraView('iso')">●</button>
+    <button onclick="pan3dCamera(1,0,0)">→</button>
+    <button onclick="pan3dCamera(0,0,1)">↓</button>
+  </div>
+
+  <!-- ===================================================================== -->
+  <!-- APPLICATION JAVASCRIPT                                                -->
+  <!-- ===================================================================== -->
+  <script>
+    const CONTAMINANT_PRESETS = {
+      ultrapure: {
+        name: 'Blanco Agua Destilada (0 NTU)',
+        ntu: 0.15,
+        tssFactor: 1.0,
+        particleSize: '< 0.1 µm (Rayleigh)',
+        regime: 'Rayleigh',
+        cdom: 'Nulo',
+        colorRatio: 1.02,
+        desc: 'Blanco óptico de agua destilada. Pedestal de 0.000 V con fuente simétrica.'
+      },
+      drinking: {
+        name: 'Agua Potable (NOM-127-SSA1)',
+        ntu: 2.4,
+        tssFactor: 1.35,
+        particleSize: '0.4 – 3.5 µm',
+        regime: 'Mie (d ≈ λ)',
+        cdom: 'Bajo',
+        colorRatio: 1.15,
+        desc: 'Agua potable dentro de NOM-127 (≤ 5 NTU).'
+      },
+      clay: {
+        name: 'Estándar Formazina / Arcilla (45 NTU)',
+        ntu: 45.0,
+        tssFactor: 1.45,
+        particleSize: '1.5 – 12 µm',
+        regime: 'Mie Intenso',
+        cdom: 'Bajo',
+        colorRatio: 1.28,
+        desc: 'Suspensión coloidal de calibración nefelométrica.'
+      },
+      algae: {
+        name: 'Río Atoyac / Presa Valsequillo (CDOM)',
+        ntu: 68.5,
+        tssFactor: 1.60,
+        particleSize: '3 – 25 µm',
+        regime: 'Mie + Absorción',
+        cdom: 'Alto (CDOM)',
+        colorRatio: 1.54,
+        desc: 'Muestra ambiental con absorción cromática compensada por el canal FA (0°).'
+      },
+      microplastics: {
+        name: 'Microplásticos PMMA / PS (18 NTU)',
+        ntu: 18.0,
+        tssFactor: 1.18,
+        particleSize: '5 – 45 µm',
+        regime: 'Mie / Geométrico',
+        cdom: 'Nulo',
+        colorRatio: 1.09,
+        desc: 'Partículas poliméricas discretas en suspensión.'
+      },
+      wastewater: {
+        name: 'Cinética de Floculación con Alumbre V(t)',
+        ntu: 115.0,
+        tssFactor: 1.75,
+        particleSize: '10 – 80 µm',
+        regime: 'Dispersión Múltiple',
+        cdom: 'Medio',
+        colorRatio: 1.42,
+        desc: 'Proceso de coagulación-floculación con sulfato de aluminio.'
+      }
+    };
+
+    const state = {
+      activeTab: 'inicio',
+      paused: false,
+      ntu: 14.2,
+      psuVoltage: 12.0,
+      malusAngleDeg: 80,
+      presetKey: 'drinking',
+      laserWavelength: 532,
+      calibSlopeMv: 26.8,
+      calibDarkMv: 1.2,
+      tssFactor: 1.35,
+      hum60HzMv: 1.8,
+      flickerMv: 0.6,
+      strayLightMv: 1.2,
+      triggerLevelV: 0.38,
+      scopeZoom: 5,
+      scopeTimebase: 10,
+      scopeCoupling: 'DC',
+      scopeFilter: 'rc10',
+      optCapPf: 100,
+      adcConfig: '12bit_5v',
+      scopeWhiteBg: false,
+      singleShotHold: false,
+      heatmap: false,
+      roi: { x: 220, y: 130, w: 280, h: 145 },
+      particleSpikeBoost: 0,
+      v90Volts: 0.382,
+      v0Volts: 2.410,
+      rRatio: 0.1585,
+      snrDb: 44.8,
+      sigmaFiltMv: 0.48,
+      vppMv: 2.84,
+      samples: [],
+      autoLogTimer: null,
+      serialConnected: false
+    };
+
+    function showToast(msg) {
+      const container = document.getElementById('toastContainer');
+      if (!container) return;
+      const el = document.createElement('div');
+      el.className = 'bg-[#1c202b] border border-white/15 text-white px-4 py-2 rounded-full text-xs font-medium shadow-xl pointer-events-auto transition-opacity duration-300';
+      el.textContent = msg;
+      container.appendChild(el);
+      setTimeout(() => {
+        el.style.opacity = '0';
+        setTimeout(() => el.remove(), 300);
+      }, 2200);
+    }
+
+    function switchTab(tabId) {
+      state.activeTab = tabId;
+      const tabs = ['inicio', '3d', 'camara', 'osciloscopio', 'contaminantes', 'datalogger', 'firmware'];
+      tabs.forEach(t => {
+        const sec = document.getElementById('tab-' + t);
+        if (sec) sec.classList.toggle('hidden', t !== tabId);
+      });
+      document.querySelectorAll('.nav-tab-btn').forEach(btn => {
+        btn.classList.toggle('active', btn.getAttribute('data-tab') === tabId);
+      });
+      const ctrlBar = document.getElementById('controlBarSection');
+      if (ctrlBar) ctrlBar.classList.toggle('hidden', tabId === 'inicio');
+
+      if (tabId === '3d') {
+        requestAnimationFrame(() => {
+          resizeThreeJS();
+          update3dLabelsPosition();
+        });
+      }
+      if (tabId === 'camara' && beamChart) beamChart.resize();
+      if (tabId === 'osciloscopio' && fftChart) fftChart.resize();
+      if (tabId === 'contaminantes' && calibChart) calibChart.resize();
+    }
+
+    function openDisclaimerModal() {
+      document.getElementById('disclaimerModal').classList.remove('hidden');
+    }
+    function closeDisclaimerModal() {
+      document.getElementById('disclaimerModal').classList.add('hidden');
+    }
+
+    function toggleGlobalPause() {
+      state.paused = !state.paused;
+      document.getElementById('pauseBtnLabel').textContent = state.paused ? 'Reanudar' : 'Pausar';
+    }
+
+    function injectParticleSpike() {
+      state.particleSpikeBoost = 0.65;
+      showToast('Pulso inyectado en FB (90°)');
+    }
+
+    function applyContaminantPreset() {
+      selectQuickSample(document.getElementById('selectContaminantPreset').value);
+    }
+
+    function selectQuickSample(key) {
+      const preset = CONTAMINANT_PRESETS[key] || CONTAMINANT_PRESETS.drinking;
+      state.presetKey = key;
+      document.getElementById('selectContaminantPreset').value = key;
+      document.getElementById('sliderSimNTU').value = preset.ntu;
+      document.getElementById('inputTssFactor').value = preset.tssFactor;
+      updateSimulationParams();
+      showToast(preset.name);
+    }
+
+    function updateSimulationParams() {
+      state.ntu = parseFloat(document.getElementById('sliderSimNTU').value) || 0;
+      state.psuVoltage = parseFloat(document.getElementById('sliderSymmetricVoltage').value) || 12;
+      const malusEl = document.getElementById('sliderMalusAngle');
+      if (malusEl) state.malusAngleDeg = parseFloat(malusEl.value) || 80;
+
+      state.calibSlopeMv = parseFloat(document.getElementById('inputCalibSlope').value) || 26.8;
+      state.calibDarkMv = parseFloat(document.getElementById('inputCalibDark').value) || 1.2;
+      state.tssFactor = parseFloat(document.getElementById('inputTssFactor').value) || 1.35;
+
+      state.hum60HzMv = parseFloat(document.getElementById('sliderHum60Hz').value) || 1.8;
+      state.flickerMv = parseFloat(document.getElementById('sliderFlickerNoise').value) || 0.6;
+      state.strayLightMv = parseFloat(document.getElementById('sliderStrayLight').value) || 1.2;
+      state.triggerLevelV = parseFloat(document.getElementById('sliderTriggerLevel').value) || 0.38;
+
+      state.scopeZoom = parseFloat(document.getElementById('scopeVerticalZoom').value) || 5;
+      state.scopeTimebase = parseFloat(document.getElementById('scopeTimebase').value) || 10;
+      state.scopeCoupling = document.getElementById('scopeCoupling').value;
+      state.scopeFilter = document.getElementById('scopeFilterType').value;
+      state.optCapPf = parseFloat(document.getElementById('selectOptCap').value) || 100;
+      state.adcConfig = document.getElementById('selectAdcConfig').value;
+      state.laserWavelength = parseInt(document.getElementById('selectLaserSource').value, 10) || 532;
+
+      const vDark = state.strayLightMv / 1000.0;
+      const railMax = Math.min(state.psuVoltage - 1.1, 5.08);
+      const rawV90 = vDark + (state.ntu * (state.calibSlopeMv / 1000.0)) + state.particleSpikeBoost;
+      state.v90Volts = Math.min(railMax, Math.max(0, rawV90));
+
+      const muExtinction = 0.25 * state.ntu;
+      const pathL = 0.025;
+      const beerTrans = Math.exp(-muExtinction * pathL);
+      const thetaRad = (state.malusAngleDeg * Math.PI) / 180.0;
+      const malusFactor = Math.pow(Math.cos(thetaRad), 2);
+      const rawV0 = vDark + 82.0 * beerTrans * malusFactor;
+      state.v0Volts = Math.min(railMax, Math.max(vDark + 0.002, rawV0));
+
+      state.rRatio = Math.max(0, (state.v90Volts - vDark) / Math.max(0.005, state.v0Volts - vDark));
+
+      const bwRawHz = state.optCapPf === 0 ? 14000 : (state.optCapPf === 100 ? 1600 : 160);
+      const vThermalMv = 0.000128 * Math.sqrt(bwRawHz);
+      const iPhotoA = state.v90Volts / 1e6;
+      const vShotMv = Math.sqrt(2 * 1.602e-19 * Math.max(1e-9, iPhotoA) * bwRawHz) * 1e6 * 1e3;
+      const vEmiRawMv = state.hum60HzMv;
+      const vFlickerMv = state.flickerMv;
+      const vAdcMv = state.adcConfig === '10bit_5v' ? 1.41 : (state.adcConfig === '12bit_5v' ? 0.35 : 0.08);
+
+      const totalRawMv = Math.sqrt(vThermalMv**2 + vShotMv**2 + vEmiRawMv**2 + vFlickerMv**2 + vAdcMv**2);
+      const rc60Atten = state.scopeFilter === 'none' ? 1.0 : (state.scopeFilter === 'rc10' ? 0.163 : 0.06);
+      const totalFiltMv = Math.sqrt(
+        (vThermalMv * 0.25) ** 2 +
+        (vShotMv * 0.25) ** 2 +
+        (vEmiRawMv * rc60Atten) ** 2 +
+        (vFlickerMv * 0.45) ** 2 +
+        vAdcMv ** 2
+      );
+
+      state.sigmaFiltMv = totalFiltMv;
+      state.vppMv = totalFiltMv * 5.8;
+      state.snrDb = 20 * Math.log10(Math.max(0.001, state.v90Volts * 1000.0) / Math.max(0.01, totalFiltMv));
+      const snrGainDb = 20 * Math.log10(Math.max(0.01, totalRawMv) / Math.max(0.01, totalFiltMv));
+
+      document.getElementById('labelSimNTU').textContent = state.ntu.toFixed(1) + ' NTU';
+      document.getElementById('valSymmetricPsu').textContent = '±' + state.psuVoltage.toFixed(1) + ' V';
+      document.getElementById('labelSimPsu').textContent = '±' + state.psuVoltage.toFixed(1) + ' V';
+      const malusValEl = document.getElementById('valMalusAngle');
+      if (malusValEl) malusValEl.textContent = state.malusAngleDeg + '°';
+
+      document.getElementById('headerNTU').textContent = state.ntu.toFixed(1) + ' NTU';
+      document.getElementById('headerVout').textContent = state.v90Volts.toFixed(3) + ' V';
+      document.getElementById('headerSNR').textContent = state.snrDb.toFixed(1) + ' dB';
+      document.getElementById('headerPsuVal').textContent = '±' + state.psuVoltage.toFixed(1) + ' V';
+      document.getElementById('badgePsuRail').textContent = '±' + state.psuVoltage.toFixed(1) + ' V';
+
+      document.getElementById('quickV90').textContent = state.v90Volts.toFixed(3) + ' V';
+      document.getElementById('quickV0').textContent = state.v0Volts.toFixed(3) + ' V';
+      document.getElementById('quickRatio').textContent = state.rRatio.toFixed(4);
+
+      const tssVal = state.ntu * state.tssFactor;
+      document.getElementById('cardVout').textContent = state.v90Volts.toFixed(3) + ' V';
+      document.getElementById('cardPhotocurrent').textContent = 'I_p(90°): ' + (state.v90Volts * 1000).toFixed(0) + ' nA';
+      document.getElementById('cardArduinoPinV').textContent = state.v0Volts.toFixed(3) + ' V';
+      document.getElementById('cardOpticalPower').textContent = 'P_opt(90°): ' + (state.v90Volts / 0.38).toFixed(2) + ' µW';
+      document.getElementById('cardNTU').textContent = state.ntu.toFixed(1) + ' NTU';
+      document.getElementById('cardTSS').textContent = 'TSS: ' + tssVal.toFixed(1) + ' mg/L';
+      const adcCounts = Math.min(4095, Math.round((state.v90Volts / 5.0) * 4095));
+      document.getElementById('cardAdcRaw').textContent = adcCounts + ' / 4095';
+      document.getElementById('beamAttenuationBadge').textContent = 'T₀°(Malus): ' + (beerTrans * malusFactor * 100).toFixed(2) + '%';
+
+      document.getElementById('valHum60Hz').textContent = state.hum60HzMv.toFixed(1) + ' mV';
+      document.getElementById('valFlickerNoise').textContent = state.flickerMv.toFixed(1) + ' mV';
+      document.getElementById('valStrayLight').textContent = state.strayLightMv.toFixed(1) + ' mV';
+      document.getElementById('labelTrigLevel').textContent = state.triggerLevelV.toFixed(2) + ' V';
+      document.getElementById('scopeReadoutVmean').textContent = state.v90Volts.toFixed(3) + ' V';
+      document.getElementById('scopeReadoutVpp').textContent = state.vppMv.toFixed(2) + ' mV';
+      document.getElementById('scopeReadoutSigma').textContent = state.sigmaFiltMv.toFixed(2) + ' mV';
+      document.getElementById('scopeReadoutSNR').textContent = state.snrDb.toFixed(1) + ' dB';
+
+      const sumSq = vThermalMv**2 + vShotMv**2 + vEmiRawMv**2 + vFlickerMv**2 + vAdcMv**2 || 1;
+      document.getElementById('budgetThermal').textContent = (vThermalMv * 1000).toFixed(1) + ' µV';
+      document.getElementById('budgetThermalPct').textContent = Math.max(1, Math.round((vThermalMv**2 / sumSq) * 100)) + '%';
+      document.getElementById('budgetShot').textContent = (vShotMv * 1000).toFixed(1) + ' µV';
+      document.getElementById('budgetShotPct').textContent = Math.max(1, Math.round((vShotMv**2 / sumSq) * 100)) + '%';
+      document.getElementById('budgetEmi').textContent = vEmiRawMv.toFixed(2) + ' mV';
+      document.getElementById('budgetEmiPct').textContent = Math.max(1, Math.round((vEmiRawMv**2 / sumSq) * 100)) + '%';
+      document.getElementById('budgetFlicker').textContent = vFlickerMv.toFixed(2) + ' mV';
+      document.getElementById('budgetFlickerPct').textContent = Math.max(1, Math.round((vFlickerMv**2 / sumSq) * 100)) + '%';
+      document.getElementById('budgetAdc').textContent = vAdcMv.toFixed(2) + ' mV';
+      document.getElementById('budgetAdcPct').textContent = Math.max(1, Math.round((vAdcMv**2 / sumSq) * 100)) + '%';
+      document.getElementById('budgetTotalRaw').textContent = totalRawMv.toFixed(2) + ' mV';
+      document.getElementById('budgetTotalFilt').textContent = totalFiltMv.toFixed(2) + ' mV';
+      document.getElementById('budgetSnrGain').textContent = '+' + Math.max(0.5, snrGainDb).toFixed(1) + ' dB';
+
+      const lodNtu = (3 * totalFiltMv) / state.calibSlopeMv;
+      const loqNtu = (10 * totalFiltMv) / state.calibSlopeMv;
+      const enob = Math.min(12.0, Math.max(8.0, (state.snrDb - 1.76) / 6.02));
+      document.getElementById('metricLOD').textContent = lodNtu.toFixed(2) + ' NTU';
+      document.getElementById('metricLOQ').textContent = loqNtu.toFixed(2) + ' NTU';
+      document.getElementById('metricENOB').textContent = enob.toFixed(1) + ' bits';
+
+      const preset = CONTAMINANT_PRESETS[state.presetKey] || CONTAMINANT_PRESETS.drinking;
+      document.getElementById('contamTitle').textContent = preset.name;
+      document.getElementById('contamInterpretation').textContent = preset.desc;
+      document.getElementById('waterMetricNTU').textContent = state.ntu.toFixed(1) + ' NTU';
+      document.getElementById('waterMetricTSS').textContent = tssVal.toFixed(1) + ' mg/L';
+      document.getElementById('waterMetricTssFactor').textContent = 'k = ' + state.tssFactor.toFixed(2);
+      document.getElementById('waterMetricTransmittance').textContent = (beerTrans * 100).toFixed(1) + ' %';
+      document.getElementById('waterMetricExtinction').textContent = muExtinction.toFixed(2) + ' m⁻¹';
+      document.getElementById('waterMetricRegime').textContent = preset.regime;
+      document.getElementById('waterMetricParticleSize').textContent = preset.particleSize;
+      document.getElementById('waterMetricColorRatio').textContent = preset.colorRatio.toFixed(2);
+      document.getElementById('waterMetricCDOM').textContent = preset.cdom;
+      document.getElementById('calibEquationBadge').textContent =
+        'V₉₀° = ' + (state.calibSlopeMv / 1000).toFixed(4) + '·NTU + ' + (state.calibDarkMv / 1000).toFixed(4) + ' V';
+
+      const whoEl = document.getElementById('normBadgeWHO');
+      const nomEl = document.getElementById('normBadgeNOM');
+      whoEl.textContent = state.ntu <= 1.0 ? 'OMS: Óptima (≤1 NTU)' : 'OMS: Excede 1 NTU';
+      nomEl.textContent = state.ntu <= 5.0 ? 'NOM-127: Cumple (≤5 NTU)' : 'NOM-127: Excede 5 NTU';
+
+      if (window.polarizerRingMesh) {
+        window.polarizerRingMesh.rotation.x = thetaRad;
+      }
+
+      updateChartsData();
+    }
+
+    // =========================================================================
+    // DARK-MODE CHARTS
+    // =========================================================================
+    let beamChart = null;
+    let fftChart = null;
+    let calibChart = null;
+
+    function initCharts() {
+      Chart.defaults.color = '#9ca3af';
+      Chart.defaults.borderColor = 'rgba(255,255,255,0.06)';
+
+      const ctxBeam = document.getElementById('beamProfileChart').getContext('2d');
+      beamChart = new Chart(ctxBeam, {
+        type: 'line',
+        data: {
+          labels: ['0 mm', '5 mm', '10 mm', '15 mm', '20 mm', '25 mm'],
+          datasets: [
+            { label: 'FA 0° I(x)', data: [100, 96, 92, 88, 85, 82], borderColor: '#10b981', backgroundColor: 'rgba(16,185,129,0.12)', fill: true, tension: 0.35 },
+            { label: 'FB 90° Dispersión', data: [12, 18, 22, 21, 19, 16], borderColor: '#38bdf8', borderDash: [4, 3], tension: 0.35 }
+          ]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: { legend: { labels: { font: { size: 10 } } } },
+          scales: { y: { beginAtZero: true, max: 105 } }
+        }
+      });
+
+      const ctxFft = document.getElementById('fftSpectrumChart').getContext('2d');
+      const freqs = Array.from({ length: 26 }, (_, i) => i * 10 + ' Hz');
+      fftChart = new Chart(ctxFft, {
+        type: 'bar',
+        data: {
+          labels: freqs,
+          datasets: [
+            { label: 'Sin Filtro RC (dBV)', data: freqs.map((_, i) => (i === 6 ? -28 : -58 - Math.random() * 6)), backgroundColor: 'rgba(239,68,68,0.5)' },
+            { label: 'Con R1/R2 1.6K + C1/C2 10µF (dBV)', data: freqs.map((_, i) => (i === 6 ? -48 : -76 - i * 0.4)), backgroundColor: '#0a84ff' }
+          ]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: { legend: { labels: { font: { size: 10 } } } },
+          scales: { y: { min: -95, max: -15 } }
+        }
+      });
+
+      const ctxCalib = document.getElementById('calibrationChart').getContext('2d');
+      const ntuPts = [0, 10, 25, 50, 75, 100, 150, 200];
+      calibChart = new Chart(ctxCalib, {
+        type: 'line',
+        data: {
+          labels: ntuPts.map(n => n + ' NTU'),
+          datasets: [
+            { label: 'ADC_90 FB (V)', data: ntuPts.map(n => 0.0012 + n * 0.0268), borderColor: '#10b981', tension: 0.2 },
+            { label: 'Cociente R_ratio = FB / FA', data: ntuPts.map(n => (0.0268 * n) / (2.4 * Math.exp(-0.006 * n))), borderColor: '#38bdf8', tension: 0.25 }
+          ]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: { legend: { labels: { font: { size: 11 } } } }
+        }
+      });
+    }
+
+    function updateChartsData() {
+      if (beamChart) {
+        const mu = 0.25 * state.ntu;
+        const xs = [0, 0.005, 0.010, 0.015, 0.020, 0.025];
+        beamChart.data.datasets[0].data = xs.map(x => +(100 * Math.exp(-mu * x)).toFixed(1));
+        beamChart.data.datasets[1].data = xs.map(x => +(Math.min(98, state.ntu * 0.65 * Math.exp(-mu * x))).toFixed(1));
+        beamChart.update('none');
+      }
+      if (calibChart) {
+        const ntuPts = [0, 10, 25, 50, 75, 100, 150, 200];
+        const slope = state.calibSlopeMv / 1000.0;
+        const dark = state.calibDarkMv / 1000.0;
+        calibChart.data.datasets[0].data = ntuPts.map(n => +(dark + n * slope).toFixed(3));
+        calibChart.data.datasets[1].data = ntuPts.map(n => +((n * slope) / Math.max(0.15, state.v0Volts * Math.exp(-0.004 * n))).toFixed(3));
+        calibChart.update('none');
+      }
+    }
+
+    // =========================================================================
+    // CAMERA & OSCILLOSCOPE CANVASES
+    // =========================================================================
+    function updateRoiFromSliders() {
+      state.roi.x = parseInt(document.getElementById('roiX').value, 10);
+      state.roi.y = parseInt(document.getElementById('roiY').value, 10);
+      state.roi.w = parseInt(document.getElementById('roiW').value, 10);
+      state.roi.h = parseInt(document.getElementById('roiH').value, 10);
+      document.getElementById('valRoiX').textContent = state.roi.x;
+      document.getElementById('valRoiY').textContent = state.roi.y;
+      document.getElementById('valRoiW').textContent = state.roi.w;
+      document.getElementById('valRoiH').textContent = state.roi.h;
+      document.getElementById('hudRoiCoords').textContent =
+        `ROI(${state.roi.x},${state.roi.y},${state.roi.w}×${state.roi.h})`;
+    }
+
+    function toggleHeatmapMode() {
+      state.heatmap = !state.heatmap;
+      document.getElementById('heatmapStateLabel').textContent = 'Mapa Térmico: ' + (state.heatmap ? 'ON' : 'OFF');
+    }
+
+    function changeCameraSource() {
+      const src = document.getElementById('selectCamSource').value;
+      document.getElementById('esp32UrlBar').classList.toggle('hidden', src !== 'esp32');
+    }
+
+    function connectEsp32Stream() {
+      const url = document.getElementById('inputEsp32Url').value.trim();
+      document.getElementById('esp32StreamImg').src = url;
+      showToast('Stream ESP32-S3: ' + url);
+    }
+
+    function downloadCameraSnapshot() {
+      const canvas = document.getElementById('chamberCanvas');
+      const a = document.createElement('a');
+      a.href = canvas.toDataURL('image/png');
+      a.download = 'camara_oscura_nefelometro.png';
+      a.click();
+    }
+
+    function toggleScopeBgMode() {
+      state.scopeWhiteBg = !state.scopeWhiteBg;
+      document.getElementById('scopeBgModeLabel').textContent =
+        state.scopeWhiteBg ? 'Pantalla: Blanco Lab' : 'Pantalla: Oscura Tek';
+    }
+
+    function triggerSingleShot() {
+      state.singleShotHold = !state.singleShotHold;
+      document.getElementById('scopeTrigState').textContent = state.singleShotHold ? 'STOP' : "TRIG'D";
+    }
+
+    function clearScopePersistence() {
+      state.singleShotHold = false;
+      document.getElementById('scopeTrigState').textContent = "TRIG'D";
+    }
+
+    function importTektronixCSV(ev) {
+      const file = ev.target.files && ev.target.files[0];
+      if (file) showToast('CSV cargado: ' + file.name);
+    }
+
+    function renderDarkChamberAndScopes(tSec) {
+      if (state.particleSpikeBoost > 0.002) {
+        state.particleSpikeBoost *= 0.92;
+        updateSimulationParams();
+      } else {
+        state.particleSpikeBoost = 0;
+      }
+
+      const camCanvas = document.getElementById('chamberCanvas');
+      if (camCanvas) {
+        const ctx = camCanvas.getContext('2d');
+        const W = camCanvas.width;
+        const H = camCanvas.height;
+        ctx.fillStyle = '#050609';
+        ctx.fillRect(0, 0, W, H);
+
+        ctx.strokeStyle = 'rgba(255,255,255,0.14)';
+        ctx.lineWidth = 1.5;
+        ctx.strokeRect(170, 70, 380, 265);
+
+        const beamRgb = state.laserWavelength === 532 ? '16, 235, 110' : (state.laserWavelength === 650 ? '245, 60, 60' : '190, 70, 220');
+        const beamAlpha = Math.min(0.92, 0.16 + (state.ntu / 160) + state.particleSpikeBoost * 0.5);
+        const grad = ctx.createLinearGradient(0, H / 2 - 42, 0, H / 2 + 42);
+        grad.addColorStop(0, `rgba(${beamRgb}, 0)`);
+        grad.addColorStop(0.5, `rgba(${beamRgb}, ${beamAlpha})`);
+        grad.addColorStop(1, `rgba(${beamRgb}, 0)`);
+        ctx.fillStyle = grad;
+        ctx.fillRect(40, H / 2 - 42, W - 80, 84);
+
+        ctx.fillStyle = 'rgba(16, 185, 129, 0.25)';
+        ctx.fillRect(565, H / 2 - 36, 12, 72);
+        ctx.fillStyle = '#cbd5e1';
+        ctx.font = '11px monospace';
+        ctx.fillText(`FA (0° → A0) · θ=${state.malusAngleDeg}°`, 505, H / 2 - 46);
+        ctx.fillText(`↓ FB (90° → A1)`, 305, 355);
+
+        ctx.strokeStyle = '#0a84ff';
+        ctx.setLineDash([5, 4]);
+        ctx.strokeRect(state.roi.x, state.roi.y, state.roi.w, state.roi.h);
+        ctx.setLineDash([]);
+      }
+
+      if (state.singleShotHold) return;
+
+      const scopeCanvas = document.getElementById('mainScopeCanvas');
+      if (scopeCanvas) {
+        const ctx = scopeCanvas.getContext('2d');
+        const W = scopeCanvas.width;
+        const H = scopeCanvas.height;
+        ctx.fillStyle = state.scopeWhiteBg ? '#f8fafc' : '#06080d';
+        ctx.fillRect(0, 0, W, H);
+
+        ctx.strokeStyle = state.scopeWhiteBg ? 'rgba(0,0,0,0.08)' : 'rgba(255,255,255,0.08)';
+        ctx.lineWidth = 1;
+        for (let x = 0; x <= W; x += W / 10) {
+          ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, H); ctx.stroke();
+        }
+        for (let y = 0; y <= H; y += H / 8) {
+          ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(W, y); ctx.stroke();
+        }
+
+        ctx.strokeStyle = '#10b981';
+        ctx.lineWidth = 2.2;
+        ctx.beginPath();
+        for (let x = 0; x < W; x++) {
+          const t = tSec + (x / W) * (state.scopeTimebase * 0.01);
+          const hum = (state.sigmaFiltMv / 1000) * Math.sin(2 * Math.PI * 60 * t);
+          const noise = (state.sigmaFiltMv / 1000) * 0.5 * Math.sin(2 * Math.PI * 190 * t + x);
+          const dc = state.scopeCoupling === 'AC' ? 0 : state.v90Volts;
+          const yNorm = 0.72 - ((dc + hum + noise) * (state.scopeZoom * 0.06));
+          const y = Math.max(12, Math.min(H - 12, yNorm * H));
+          if (x === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+        }
+        ctx.stroke();
+
+        ctx.strokeStyle = '#38bdf8';
+        ctx.lineWidth = 2.0;
+        ctx.beginPath();
+        for (let x = 0; x < W; x++) {
+          const t = tSec + (x / W) * (state.scopeTimebase * 0.01);
+          const hum = (state.sigmaFiltMv / 1000) * 0.7 * Math.cos(2 * Math.PI * 60 * t);
+          const dc = state.scopeCoupling === 'AC' ? 0 : state.v0Volts * 0.35;
+          const yNorm = 0.35 - ((dc + hum) * (state.scopeZoom * 0.04));
+          const y = Math.max(12, Math.min(H - 12, yNorm * H));
+          if (x === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+        }
+        ctx.stroke();
+      }
+
+      const miniCanvas = document.getElementById('miniScopeCanvas');
+      if (miniCanvas) {
+        const mctx = miniCanvas.getContext('2d');
+        const mW = miniCanvas.width;
+        const mH = miniCanvas.height;
+        mctx.fillStyle = '#080a0f';
+        mctx.fillRect(0, 0, mW, mH);
+        mctx.strokeStyle = '#10b981';
+        mctx.lineWidth = 1.8;
+        mctx.beginPath();
+        for (let x = 0; x < mW; x++) {
+          const y = mH * 0.65 - (state.v90Volts * 10) + Math.sin(x * 0.12 + tSec * 12) * 2.5;
+          if (x === 0) mctx.moveTo(x, y); else mctx.lineTo(x, y);
+        }
+        mctx.stroke();
+      }
+    }
+
+    // =========================================================================
+    // DATA LOGGER
+    // =========================================================================
+    function logCurrentSample() {
+      const preset = CONTAMINANT_PRESETS[state.presetKey] || CONTAMINANT_PRESETS.drinking;
+      const row = {
+        id: state.samples.length + 1,
+        time: new Date().toLocaleTimeString(),
+        sample: preset.name,
+        v90: state.v90Volts.toFixed(4),
+        v0: state.v0Volts.toFixed(4),
+        ratio: state.rRatio.toFixed(4),
+        ntu: state.ntu.toFixed(2),
+        tss: (state.ntu * state.tssFactor).toFixed(2),
+        snr: state.snrDb.toFixed(1),
+        nom: state.ntu <= 5.0 ? 'CUMPLE' : 'EXCEDE'
+      };
+      state.samples.unshift(row);
+      renderSampleTable();
+    }
+
+    function renderSampleTable() {
+      const tbody = document.getElementById('sampleLogTableBody');
+      if (!tbody) return;
+      tbody.innerHTML = state.samples.map(r => `
+        <tr class="hover:bg-white/[0.03]">
+          <td class="py-2 px-2 font-semibold text-white">${r.id}</td>
+          <td class="py-2 px-2 text-[#8e939e]">${r.time}</td>
+          <td class="py-2 px-2 font-sans text-gray-200">${r.sample}</td>
+          <td class="py-2 px-2 text-emerald-400 font-semibold">${r.v90}</td>
+          <td class="py-2 px-2 text-sky-400 font-semibold">${r.v0}</td>
+          <td class="py-2 px-2 text-white font-semibold">${r.ratio}</td>
+          <td class="py-2 px-2 font-bold text-white">${r.ntu}</td>
+          <td class="py-2 px-2 text-gray-300">${r.tss}</td>
+          <td class="py-2 px-2 text-sky-400">${r.snr}</td>
+          <td class="py-2 px-2"><span class="px-2 py-0.5 rounded-full text-[10px] ${r.nom === 'CUMPLE' ? 'bg-emerald-500/15 text-emerald-300' : 'bg-red-500/15 text-red-300'}">${r.nom}</span></td>
+        </tr>
+      `).join('');
+    }
+
+    function toggleAutoLogger() {
+      if (state.autoLogTimer) {
+        clearInterval(state.autoLogTimer);
+        state.autoLogTimer = null;
+        document.getElementById('autoLogLabel').textContent = 'Iniciar Muestreo Continuo (1 Hz)';
+      } else {
+        logCurrentSample();
+        state.autoLogTimer = setInterval(logCurrentSample, 1000);
+        document.getElementById('autoLogLabel').textContent = 'Detener Muestreo (1 Hz)';
+      }
+    }
+
+    function clearSampleLog() {
+      state.samples = [];
+      renderSampleTable();
+    }
+
+    function exportSamplesCSV() {
+      const headers = 'ID,Hora,Muestra,ADC90_V,ADC0_V,R_ratio,Turbidez_NTU,TSS_mgL,SNR_dB,NOM127\n';
+      const rows = state.samples.map(r =>
+        `${r.id},${r.time},"${r.sample}",${r.v90},${r.v0},${r.ratio},${r.ntu},${r.tss},${r.snr},${r.nom}`
+      ).join('\n');
+      const blob = new Blob([headers + rows], { type: 'text/csv;charset=utf-8;' });
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      a.download = 'bitacora_nefelometro_buap.csv';
+      a.click();
+    }
+
+    function exportSamplesJSON() {
+      const blob = new Blob([JSON.stringify(state.samples, null, 2)], { type: 'application/json' });
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      a.download = 'bitacora_nefelometro_buap.json';
+      a.click();
+    }
+
+    function copyCodeBlock(id) {
+      const text = document.getElementById(id).innerText;
+      if (navigator.clipboard) navigator.clipboard.writeText(text);
+      showToast('Código copiado');
+    }
+
+    async function connectWebSerial() {
+      if (!('serial' in navigator)) {
+        showToast('Web Serial requiere Chromium/Chrome');
+        return;
+      }
+      try {
+        await navigator.serial.requestPort();
+        state.serialConnected = true;
+        document.getElementById('serialBtnLabel').textContent = 'Conectado';
+        document.getElementById('headerAcqMode').textContent = 'USB';
+      } catch (e) {}
+    }
+
+    // =========================================================================
+    // HIGH-CONTRAST REAL-LIFE 3D HARDWARE MODEL (DARK LAB ENVIRONMENT)
+    // =========================================================================
+    let scene3d, camera3d, renderer3d, raycaster3d, mouse3d;
+    let bridgesGroup3d = null;
+    let showBridges3d = true;
+    let showLabels3d = true;
+    const interactiveMeshes3d = [];
+
+    const camSpherical = { theta: 0.24, phi: 0.80, radius: 13.0 };
+    const camTarget = new THREE.Vector3(0.2, 0.6, 0.0);
+    const desiredCam = {
+      theta: 0.24,
+      phi: 0.80,
+      radius: 13.0,
+      target: new THREE.Vector3(0.2, 0.6, 0.0)
+    };
+
+    const STAGE_INFO_3D = {
+      all: {
+        badge: 'MONTAJE REAL COMPLETO · 1,332 PUNTOS',
+        coords: 'FA (0°) + FB (90°) + Placa Verde + Arduino UNO',
+        title: 'Circuito Real en Placa Verde y Cámara Oscura',
+        desc: 'Montaje completo: sensores FA (0°) y FB (90°) en la cámara oscura conectados a las dos ramas gemelas de filtrado RC (R1/R2 = 1.6 kΩ, C1/C2 = 10 µF) y protección Zener (R3/R4 = 680 Ω, D1/D2 = BZX55C5V1) hacia A0 y A1 del Arduino UNO.',
+        wiring: [
+          '🟢 FA (OPT101 0°): OUT → R2 (1.6K) → C1 (10µF a GND) → R3 (680Ω) → D2 (BZX55C5V1 a GND) → ADC_0 (Pin A0 Arduino UNO).',
+          '🔵 FB (OPT101 90°): OUT → R1 (1.6K) → C2 (10µF a GND) → R4 (680Ω) → D1 (BZX55C5V1 a GND) → ADC_90 (Pin A1 Arduino UNO).',
+          '🟡 Puentes Pin 4 (FB) ↔ Pin 5 (OUT) soldados en FA y FB para R_F = 1 MΩ.',
+          '⚡ Fuente Simétrica (0–15V) + Zeners (10V, 9V, 6V): Alimenta VCC, GND y el riel negativo -V.'
+        ],
+        cam: { theta: 0.24, phi: 0.80, radius: 13.0, target: [0.2, 0.6, 0.0] }
+      },
+      chamber: {
+        badge: 'CÁMARA OSCURA · SENSORES FA (0°) Y FB (90°)',
+        coords: 'Láser 532nm + Polarizador Malus + ESP32-S3',
+        title: 'Cámara Oscura con FA (0°), FB (90°) y Polarizador de Malus',
+        desc: 'Cámara optomecánica negra mate con láser colimado de 532 nm, 3 bafles a 45°, celda de muestra de 25 mm, polarizador rotatorio de Malus (θ = 80°) delante del sensor FA (0°), sensor FB posicionado a 90° en el arco graduado y cámara ESP32-S3.',
+        wiring: [
+          '🟢 FA (0° Transmitancia): Recibe el haz directo atenuado por el polarizador de Malus → cable verde hacia R2 (1.6K).',
+          '🔵 FB (90° Dispersión): Recibe la luz dispersada a 90° → cable azul hacia R1 (1.6K).',
+          '📷 ESP32-S3 CAM: Enfocada al volumen de dispersión del haz de 532 nm.'
+        ],
+        cam: { theta: -0.20, phi: 0.85, radius: 7.8, target: [-4.0, 1.0, 0.0] }
+      },
+      opt101: {
+        badge: 'SENSORES FA (0°) Y FB (90°) · CJMCU-101',
+        coords: 'Pines OUT, GND, VCC y Puente Pin 4–5',
+        title: 'Conexión de los Fotosensores FA (0°) y FB (90°)',
+        desc: 'Ambos módulos CJMCU-101 tienen puenteado Pin 4 (FB) con Pin 5 (OUT) para activar la resistencia interna de transimpedancia de 1 MΩ, con VCC al bus positivo, GND a tierra común y -V al riel negativo.',
+        wiring: [
+          '🔴 Pin VCC (FA y FB): Conectado al bus VCC regulado + capacitor de desacoplo 100 nF a GND.',
+          '🟡 Pin GND (FA y FB): Conectado al bus común GND.',
+          '🟠 Puente Pin 4 ↔ Pin 5: Puente de estaño directo + C_ext = 100 pF.',
+          '🟢 Salida OUT: FA.OUT va a R2 (1.6K) y FB.OUT va a R1 (1.6K).'
+        ],
+        cam: { theta: -0.06, phi: 0.76, radius: 7.0, target: [-3.0, 1.0, 0.3] }
+      },
+      protection: {
+        badge: 'ESQUEMA EN PLACA VERDE · R1–R4, C1–C2, D1–D2',
+        coords: 'R1/R2 (1.6K) · C1/C2 (10µF) · R3/R4 (680Ω) · D1/D2 (BZX55C5V1)',
+        title: 'Filtros RC (9.95 Hz) y Diodos Zener BZX55C5V1 hacia Arduino UNO',
+        desc: 'Montaje idéntico a tu esquema sobre la placa perforada verde de 1,332 puntos: cada canal pasa por su resistencia de 1.6 kΩ (R2 y R1), su capacitor electrolítico de 10 µF a tierra (C1 y C2), su resistencia limitadora de 680 Ω (R3 y R4) y su diodo Zener BZX55C5V1 (D2 y D1) antes de entrar a A0 (ADC_0) y A1 (ADC_90).',
+        wiring: [
+          '🟢 Rama FA (0°): FA.OUT → R2 (1.6K) → Nodo C1 (+10µF a GND) → R3 (680Ω) → Nodo ADC_0 (Cátodo D2 BZX55C5V1 a GND) → Arduino A0.',
+          '🔵 Rama FB (90°): FB.OUT → R1 (1.6K) → Nodo C2 (+10µF a GND) → R4 (680Ω) → Nodo ADC_90 (Cátodo D1 BZX55C5V1 a GND) → Arduino A1.',
+          '⚫ Tierras: Ánodos de D1 y D2 y terminales negativos de C1 y C2 soldados al Bus GND.'
+        ],
+        cam: { theta: 0.10, phi: 0.60, radius: 6.4, target: [1.1, 0.5, 0.0] }
+      },
+      psu: {
+        badge: 'FUENTE SIMÉTRICA 0–15V + ZENERS 10V / 9V / 6V',
+        coords: 'Bornera +V / GND / -V y Regulación Zener',
+        title: 'Alimentación Simétrica y Regulación en Placa',
+        desc: 'La fuente simétrica de laboratorio alimenta los buses de la placa verde pasando por resistencias limitadoras de 220 Ω y diodos Zener de 10 V, 9 V y 6 V para entregar rieles limpios a los sensores FA y FB.',
+        wiring: [
+          '🔴 Bus VCC (+V): Regulado con Zeners 10V / 9V hacia los pines VCC de FA, FB y referencia.',
+          '🟡 Bus GND (0V): Tierra común estrella entre la fuente simétrica, C1, C2, D1, D2 y Arduino GND.',
+          '🟣 Bus -V: Polarización negativa para eliminar el pedestal oscuro en los sensores OPT101.'
+        ],
+        cam: { theta: 0.30, phi: 0.70, radius: 7.2, target: [1.4, 0.6, -1.6] }
+      }
+    };
+
+    // Compatible rounded-rect helper for all browsers/WebViews
+    function drawRoundRectCompatible(ctx, x, y, w, h, r) {
+      ctx.beginPath();
+      ctx.moveTo(x + r, y);
+      ctx.lineTo(x + w - r, y);
+      ctx.quadraticCurveTo(x + w, y, x + w, y + r);
+      ctx.lineTo(x + w, y + h - r);
+      ctx.quadraticCurveTo(x + w, y + h, x + w - r, y + h);
+      ctx.lineTo(x + r, y + h);
+      ctx.quadraticCurveTo(x, y + h, x, y + h - r);
+      ctx.lineTo(x, y + r);
+      ctx.quadraticCurveTo(x, y, x + r, y);
+      ctx.closePath();
+    }
+
+    function createBoardLabelSprite(text, bgHex = '#0b0f19', borderHex = '#10b981', textColor = '#ffffff', scale = 0.80) {
+      const c = document.createElement('canvas');
+      c.width = 256;
+      c.height = 68;
+      const ctx = c.getContext('2d');
+      ctx.fillStyle = bgHex;
+      ctx.strokeStyle = borderHex;
+      ctx.lineWidth = 4;
+      drawRoundRectCompatible(ctx, 4, 4, 248, 60, 12);
+      ctx.fill();
+      ctx.stroke();
+      ctx.fillStyle = textColor;
+      ctx.font = 'bold 26px monospace';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillText(text, 128, 35);
+
+      const tex = new THREE.CanvasTexture(c);
+      const mat = new THREE.SpriteMaterial({ map: tex, transparent: true });
+      const sprite = new THREE.Sprite(mat);
+      sprite.scale.set(1.25 * scale, 0.34 * scale, 1);
+      return sprite;
+    }
+
+    function createWireTube(points, colorHex, radius = 0.055) {
+      const vecs = points.map(p => new THREE.Vector3(p[0], p[1], p[2]));
+      const curve = new THREE.CatmullRomCurve3(vecs);
+      const geo = new THREE.TubeGeometry(curve, 32, radius, 12, false);
+      const mat = new THREE.MeshStandardMaterial({
+        color: colorHex,
+        roughness: 0.25,
+        metalness: 0.35,
+        emissive: colorHex,
+        emissiveIntensity: 0.14
+      });
+      return new THREE.Mesh(geo, mat);
+    }
+
+    function createSolderBridge(p1, p2, colorHex = 0xe2e8f0, radius = 0.048) {
+      const mid = [
+        (p1[0] + p2[0]) * 0.5,
+        Math.max(p1[1], p2[1]) + 0.045,
+        (p1[2] + p2[2]) * 0.5
+      ];
+      const curve = new THREE.CatmullRomCurve3([
+        new THREE.Vector3(...p1),
+        new THREE.Vector3(...mid),
+        new THREE.Vector3(...p2)
+      ]);
+      const geo = new THREE.TubeGeometry(curve, 16, radius, 10, false);
+      const mat = new THREE.MeshStandardMaterial({
+        color: colorHex,
+        metalness: 0.9,
+        roughness: 0.15
+      });
+      return new THREE.Mesh(geo, mat);
+    }
+
+    function createRealisticResistor(x1, z1, x2, z2, y, bandsHex, labelText, groupKey = 'protection') {
+      const group = new THREE.Group();
+      const pStart = new THREE.Vector3(x1, y, z1);
+      const pEnd = new THREE.Vector3(x2, y, z2);
+      const dir = new THREE.Vector3().subVectors(pEnd, pStart);
+      const len = dir.length();
+      const center = new THREE.Vector3().addVectors(pStart, pEnd).multiplyScalar(0.5);
+
+      const bodyLen = Math.min(len * 0.65, 0.85);
+      const radius = 0.14;
+      const bodyGeo = new THREE.CylinderGeometry(radius, radius, bodyLen, 20);
+      bodyGeo.rotateZ(Math.PI / 2);
+      const bodyMat = new THREE.MeshStandardMaterial({ color: 0x38bdf8, roughness: 0.3, metalness: 0.1 });
+      const bodyMesh = new THREE.Mesh(bodyGeo, bodyMat);
+      bodyMesh.position.copy(center);
+      bodyMesh.userData = { groupKey };
+      interactiveMeshes3d.push(bodyMesh);
+
+      const angleY = Math.atan2(dir.z, dir.x);
+      bodyMesh.rotation.y = -angleY;
+      group.add(bodyMesh);
+
+      const offsets = [-0.28, -0.10, 0.08, 0.28];
+      bandsHex.forEach((bHex, i) => {
+        const bGeo = new THREE.CylinderGeometry(radius * 1.04, radius * 1.04, bodyLen * 0.1, 16);
+        bGeo.rotateZ(Math.PI / 2);
+        const bMat = new THREE.MeshStandardMaterial({ color: bHex, roughness: 0.2 });
+        const bMesh = new THREE.Mesh(bGeo, bMat);
+        const offVec = new THREE.Vector3(Math.cos(angleY) * bodyLen * offsets[i], 0, Math.sin(angleY) * bodyLen * offsets[i]);
+        bMesh.position.copy(center).add(offVec);
+        bMesh.rotation.y = -angleY;
+        group.add(bMesh);
+      });
+
+      group.add(createSolderBridge([x1, 0.34, z1], [x1, y, z1], 0xcbd5e1, 0.028));
+      group.add(createSolderBridge([x2, 0.34, z2], [x2, y, z2], 0xcbd5e1, 0.028));
+      group.add(createSolderBridge([x1, y, z1], [x2, y, z2], 0xcbd5e1, 0.028));
+
+      if (labelText) {
+        const sp = createBoardLabelSprite(labelText, '#0d1322', '#38bdf8', '#ffffff', 0.72);
+        sp.position.set(center.x, y + 0.36, center.z);
+        group.add(sp);
+      }
+      return group;
+    }
+
+    function createRealisticZener(xAnode, zAnode, xCathode, zCathode, y, labelText, groupKey = 'protection') {
+      const group = new THREE.Group();
+      const pStart = new THREE.Vector3(xAnode, y, zAnode);
+      const pEnd = new THREE.Vector3(xCathode, y, zCathode);
+      const dir = new THREE.Vector3().subVectors(pEnd, pStart);
+      const len = dir.length();
+      const center = new THREE.Vector3().addVectors(pStart, pEnd).multiplyScalar(0.5);
+      const angleY = Math.atan2(dir.z, dir.x);
+
+      const bodyLen = Math.min(len * 0.62, 0.72);
+      const radius = 0.13;
+      const bodyGeo = new THREE.CylinderGeometry(radius, radius, bodyLen, 18);
+      bodyGeo.rotateZ(Math.PI / 2);
+      const bodyMat = new THREE.MeshStandardMaterial({
+        color: 0xf97316,
+        roughness: 0.2,
+        metalness: 0.15
+      });
+      const bodyMesh = new THREE.Mesh(bodyGeo, bodyMat);
+      bodyMesh.position.copy(center);
+      bodyMesh.rotation.y = -angleY;
+      bodyMesh.userData = { groupKey };
+      interactiveMeshes3d.push(bodyMesh);
+      group.add(bodyMesh);
+
+      const bandGeo = new THREE.CylinderGeometry(radius * 1.05, radius * 1.05, bodyLen * 0.24, 16);
+      bandGeo.rotateZ(Math.PI / 2);
+      const bandMat = new THREE.MeshStandardMaterial({ color: 0x090a0f, roughness: 0.2 });
+      const bandMesh = new THREE.Mesh(bandGeo, bandMat);
+      const offVec = new THREE.Vector3(Math.cos(angleY) * bodyLen * 0.25, 0, Math.sin(angleY) * bodyLen * 0.25);
+      bandMesh.position.copy(center).add(offVec);
+      bandMesh.rotation.y = -angleY;
+      group.add(bandMesh);
+
+      group.add(createSolderBridge([xAnode, 0.34, zAnode], [xAnode, y, zAnode], 0xe2e8f0, 0.028));
+      group.add(createSolderBridge([xCathode, 0.34, zCathode], [xCathode, y, zCathode], 0xe2e8f0, 0.028));
+      group.add(createSolderBridge([xAnode, y, zAnode], [xCathode, y, zCathode], 0xe2e8f0, 0.028));
+
+      if (labelText) {
+        const sp = createBoardLabelSprite(labelText, '#1f1224', '#f97316', '#fed7aa', 0.74);
+        sp.position.set(center.x, y + 0.36, center.z);
+        group.add(sp);
+      }
+      return group;
+    }
+
+    function createElectrolyticCap(x, z, y, labelText, groupKey = 'protection') {
+      const group = new THREE.Group();
+      const canGeo = new THREE.CylinderGeometry(0.22, 0.22, 0.55, 22);
+      const canMat = new THREE.MeshStandardMaterial({ color: 0x1e3a8a, roughness: 0.28, metalness: 0.35 });
+      const can = new THREE.Mesh(canGeo, canMat);
+      can.position.set(x, y + 0.28, z);
+      can.userData = { groupKey };
+      interactiveMeshes3d.push(can);
+      group.add(can);
+
+      const topGeo = new THREE.CylinderGeometry(0.19, 0.19, 0.02, 20);
+      const topMat = new THREE.MeshStandardMaterial({ color: 0xe2e8f0, metalness: 0.9, roughness: 0.15 });
+      const topCap = new THREE.Mesh(topGeo, topMat);
+      topCap.position.set(x, y + 0.56, z);
+      group.add(topCap);
+
+      if (labelText) {
+        const sp = createBoardLabelSprite(labelText, '#0f172a', '#eab308', '#fef08a', 0.72);
+        sp.position.set(x, y + 0.78, z);
+        group.add(sp);
+      }
+      return group;
+    }
+
+    function createCjmcuModule3d(tagText, borderColorHex, groupKey = 'opt101') {
+      const mod = new THREE.Group();
+      const pcbGeo = new THREE.BoxGeometry(1.3, 0.12, 0.95);
+      const pcbMat = new THREE.MeshStandardMaterial({ color: 0x5b21b6, roughness: 0.3, metalness: 0.2 });
+      const pcb = new THREE.Mesh(pcbGeo, pcbMat);
+      pcb.userData = { groupKey };
+      interactiveMeshes3d.push(pcb);
+      mod.add(pcb);
+
+      const icGeo = new THREE.BoxGeometry(0.52, 0.14, 0.48);
+      const icMat = new THREE.MeshStandardMaterial({ color: 0xfbbf24, roughness: 0.18, metalness: 0.75 });
+      const ic = new THREE.Mesh(icGeo, icMat);
+      ic.position.set(-0.08, 0.11, 0);
+      ic.userData = { groupKey };
+      interactiveMeshes3d.push(ic);
+      mod.add(ic);
+
+      for (let i = 0; i < 5; i++) {
+        const zOff = -0.34 + i * 0.17;
+        const pin = new THREE.Mesh(
+          new THREE.CylinderGeometry(0.032, 0.032, 0.36, 10),
+          new THREE.MeshStandardMaterial({ color: 0xfacc15, metalness: 0.9, roughness: 0.1 })
+        );
+        pin.position.set(0.48, 0.14, zOff);
+        mod.add(pin);
+      }
+
+      const bridge = createSolderBridge([0.48, 0.30, 0.17], [0.48, 0.30, 0.34], 0xfbbf24, 0.052);
+      mod.add(bridge);
+
+      const sp = createBoardLabelSprite(tagText, '#111827', borderColorHex, '#ffffff', 0.82);
+      sp.position.set(0, 0.55, 0);
+      mod.add(sp);
+
+      return mod;
+    }
+
+    function initThreeJS() {
+      const container = document.getElementById('threeContainer');
+      const canvas = document.getElementById('threeCanvas');
+      if (!container || !canvas || typeof THREE === 'undefined') return;
+
+      const rect = container.getBoundingClientRect();
+      const w = Math.max(320, Math.floor(rect.width || container.clientWidth || 860));
+      const h = Math.max(360, Math.floor(rect.height || container.clientHeight || 500));
+
+      scene3d = new THREE.Scene();
+      scene3d.background = new THREE.Color(0x040508);
+
+      camera3d = new THREE.PerspectiveCamera(38, w / h, 0.1, 200);
+      renderer3d = new THREE.WebGLRenderer({ canvas, antialias: true, powerPreference: 'high-performance' });
+      renderer3d.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+      renderer3d.setSize(w, h, false);
+
+      const hemiLight = new THREE.HemisphereLight(0xffffff, 0x1e293b, 1.25);
+      hemiLight.position.set(0, 22, 0);
+      scene3d.add(hemiLight);
+
+      const dirLight1 = new THREE.DirectionalLight(0xffffff, 1.15);
+      dirLight1.position.set(9, 18, 12);
+      scene3d.add(dirLight1);
+
+      const dirLight2 = new THREE.DirectionalLight(0x38bdf8, 0.6);
+      dirLight2.position.set(-12, 12, -10);
+      scene3d.add(dirLight2);
+
+      const bench = new THREE.Mesh(
+        new THREE.BoxGeometry(20, 0.14, 12),
+        new THREE.MeshStandardMaterial({ color: 0x090b10, roughness: 0.7, metalness: 0.3 })
+      );
+      bench.position.set(0, -0.08, 0);
+      scene3d.add(bench);
+
+      const gridHelper = new THREE.GridHelper(20, 40, 0x1e293b, 0x0f172a);
+      gridHelper.position.y = 0.01;
+      scene3d.add(gridHelper);
+
+      bridgesGroup3d = new THREE.Group();
+      scene3d.add(bridgesGroup3d);
+
+      // 1. VIVID GREEN FR4 PERFBOARD (37x36 = 1,332 SOLDER PADS)
+      const boardX = 0.8;
+      const boardY = 0.30;
+      const boardZ = 0.0;
+      const boardW = 6.2;
+      const boardD = 5.8;
+
+      const greenBoard = new THREE.Mesh(
+        new THREE.BoxGeometry(boardW, 0.14, boardD),
+        new THREE.MeshStandardMaterial({ color: 0x0d8a42, roughness: 0.25, metalness: 0.15 })
+      );
+      greenBoard.position.set(boardX, boardY, boardZ);
+      greenBoard.userData = { groupKey: 'all' };
+      interactiveMeshes3d.push(greenBoard);
+      scene3d.add(greenBoard);
+
+      const cols = 37;
+      const rows = 36;
+      const padGeo = new THREE.CylinderGeometry(0.044, 0.044, 0.15, 10);
+      const padMat = new THREE.MeshStandardMaterial({ color: 0xfacc15, metalness: 0.88, roughness: 0.18 });
+      const padsInstanced = new THREE.InstancedMesh(padGeo, padMat, cols * rows);
+      const dummy = new THREE.Object3D();
+      const startPadX = boardX - 2.8;
+      const startPadZ = boardZ - 2.6;
+      const pitchX = 5.6 / (cols - 1);
+      const pitchZ = 5.2 / (rows - 1);
+
+      let idx = 0;
+      for (let c = 0; c < cols; c++) {
+        for (let r = 0; r < rows; r++) {
+          dummy.position.set(startPadX + c * pitchX, boardY + 0.005, startPadZ + r * pitchZ);
+          dummy.updateMatrix();
+          padsInstanced.setMatrixAt(idx++, dummy.matrix);
+        }
+      }
+      padsInstanced.instanceMatrix.needsUpdate = true;
+      scene3d.add(padsInstanced);
+
+      const padPos = (c, r, yOff = 0.08) => [
+        startPadX + c * pitchX,
+        boardY + yOff,
+        startPadZ + r * pitchZ
+      ];
+
+      // Power & Ground Buses on the Green Perfboard
+      bridgesGroup3d.add(createWireTube([padPos(2, 2, 0.09), padPos(34, 2, 0.09)], 0xef4444, 0.05));
+      bridgesGroup3d.add(createWireTube([padPos(2, 18, 0.09), padPos(34, 18, 0.09)], 0xf59e0b, 0.055));
+      bridgesGroup3d.add(createWireTube([padPos(2, 33, 0.09), padPos(34, 33, 0.09)], 0xa855f7, 0.05));
+
+      // 2. CHANNEL 0° (FA -> R2 1.6K -> C1 10uF -> R3 680 -> D2 BZX55C5V1 -> ADC_0)
+      const r2Mesh = createRealisticResistor(
+        startPadX + 6 * pitchX, startPadZ + 9 * pitchZ,
+        startPadX + 13 * pitchX, startPadZ + 9 * pitchZ,
+        boardY + 0.25,
+        [0x78350f, 0x2563eb, 0xdc2626, 0xeab308],
+        'R2 1.6K',
+        'protection'
+      );
+      scene3d.add(r2Mesh);
+
+      const c1Mesh = createElectrolyticCap(startPadX + 16 * pitchX, startPadZ + 12 * pitchZ, boardY + 0.07, 'C1 10uF', 'protection');
+      scene3d.add(c1Mesh);
+
+      const r3Mesh = createRealisticResistor(
+        startPadX + 19 * pitchX, startPadZ + 9 * pitchZ,
+        startPadX + 26 * pitchX, startPadZ + 9 * pitchZ,
+        boardY + 0.25,
+        [0x2563eb, 0x6b7280, 0x78350f, 0xeab308],
+        'R3 680Ω',
+        'protection'
+      );
+      scene3d.add(r3Mesh);
+
+      const d2Mesh = createRealisticZener(
+        startPadX + 30 * pitchX, startPadZ + 18 * pitchZ,
+        startPadX + 30 * pitchX, startPadZ + 9 * pitchZ,
+        boardY + 0.25,
+        'D2 BZX55C5V1',
+        'protection'
+      );
+      scene3d.add(d2Mesh);
+
+      bridgesGroup3d.add(createSolderBridge(padPos(13, 9), padPos(16, 9), 0x10b981, 0.05));
+      bridgesGroup3d.add(createSolderBridge(padPos(16, 9), padPos(16, 12), 0x10b981, 0.05));
+      bridgesGroup3d.add(createSolderBridge(padPos(16, 12), padPos(16, 18), 0xf59e0b, 0.05));
+      bridgesGroup3d.add(createSolderBridge(padPos(16, 9), padPos(19, 9), 0x10b981, 0.05));
+      bridgesGroup3d.add(createSolderBridge(padPos(26, 9), padPos(30, 9), 0x10b981, 0.05));
+
+      // 3. CHANNEL 90° (FB -> R1 1.6K -> C2 10uF -> R4 680 -> D1 BZX55C5V1 -> ADC_90)
+      const r1Mesh = createRealisticResistor(
+        startPadX + 6 * pitchX, startPadZ + 26 * pitchZ,
+        startPadX + 13 * pitchX, startPadZ + 26 * pitchZ,
+        boardY + 0.25,
+        [0x78350f, 0x2563eb, 0xdc2626, 0xeab308],
+        'R1 1.6K',
+        'protection'
+      );
+      scene3d.add(r1Mesh);
+
+      const c2Mesh = createElectrolyticCap(startPadX + 16 * pitchX, startPadZ + 23 * pitchZ, boardY + 0.07, 'C2 10uF', 'protection');
+      scene3d.add(c2Mesh);
+
+      const r4Mesh = createRealisticResistor(
+        startPadX + 19 * pitchX, startPadZ + 26 * pitchZ,
+        startPadX + 26 * pitchX, startPadZ + 26 * pitchZ,
+        boardY + 0.25,
+        [0x2563eb, 0x6b7280, 0x78350f, 0xeab308],
+        'R4 680Ω',
+        'protection'
+      );
+      scene3d.add(r4Mesh);
+
+      const d1Mesh = createRealisticZener(
+        startPadX + 30 * pitchX, startPadZ + 18 * pitchZ,
+        startPadX + 30 * pitchX, startPadZ + 26 * pitchZ,
+        boardY + 0.25,
+        'D1 BZX55C5V1',
+        'protection'
+      );
+      scene3d.add(d1Mesh);
+
+      bridgesGroup3d.add(createSolderBridge(padPos(13, 26), padPos(16, 26), 0x38bdf8, 0.05));
+      bridgesGroup3d.add(createSolderBridge(padPos(16, 26), padPos(16, 23), 0x38bdf8, 0.05));
+      bridgesGroup3d.add(createSolderBridge(padPos(16, 23), padPos(16, 18), 0xf59e0b, 0.05));
+      bridgesGroup3d.add(createSolderBridge(padPos(16, 26), padPos(19, 26), 0x38bdf8, 0.05));
+      bridgesGroup3d.add(createSolderBridge(padPos(26, 26), padPos(30, 26), 0x38bdf8, 0.05));
+
+      const dz10 = createRealisticZener(
+        startPadX + 4 * pitchX, startPadZ + 6 * pitchZ,
+        startPadX + 4 * pitchX, startPadZ + 2 * pitchZ,
+        boardY + 0.24,
+        'Zener 10V/9V',
+        'psu'
+      );
+      scene3d.add(dz10);
+
+      // 4. DARK CHAMBER WITH FA (0°) AND FB (90°) + MALUS POLARIZER
+      const chX = -4.3;
+      const chY = 1.15;
+      const chZ = 0.0;
+
+      const matteBlackMat = new THREE.MeshStandardMaterial({ color: 0x14161f, roughness: 0.8, metalness: 0.15 });
+      const chBase = new THREE.Mesh(new THREE.BoxGeometry(4.4, 0.22, 4.4), matteBlackMat);
+      chBase.position.set(chX, 0.11, chZ);
+      chBase.userData = { groupKey: 'chamber' };
+      interactiveMeshes3d.push(chBase);
+      scene3d.add(chBase);
+
+      const backWall = new THREE.Mesh(new THREE.BoxGeometry(4.4, 1.9, 0.16), matteBlackMat);
+      backWall.position.set(chX, 0.95, chZ - 2.1);
+      scene3d.add(backWall);
+
+      const laserGeo = new THREE.CylinderGeometry(0.28, 0.28, 1.25, 20);
+      laserGeo.rotateZ(Math.PI / 2);
+      const laserMesh = new THREE.Mesh(
+        laserGeo,
+        new THREE.MeshStandardMaterial({ color: 0xf59e0b, metalness: 0.8, roughness: 0.2 })
+      );
+      laserMesh.position.set(chX - 1.9, chY, chZ);
+      laserMesh.userData = { groupKey: 'chamber' };
+      interactiveMeshes3d.push(laserMesh);
+      scene3d.add(laserMesh);
+
+      const laserSp = createBoardLabelSprite('Láser 532nm', '#062e1e', '#10b981', '#a7f3d0', 0.75);
+      laserSp.position.set(chX - 1.9, chY + 0.55, chZ);
+      scene3d.add(laserSp);
+
+      const cuvette = new THREE.Mesh(
+        new THREE.BoxGeometry(0.85, 1.4, 0.85),
+        new THREE.MeshStandardMaterial({ color: 0x38bdf8, transparent: true, opacity: 0.45, roughness: 0.1 })
+      );
+      cuvette.position.set(chX, chY, chZ);
+      cuvette.userData = { groupKey: 'chamber' };
+      interactiveMeshes3d.push(cuvette);
+      scene3d.add(cuvette);
+
+      const beamGeo = new THREE.CylinderGeometry(0.065, 0.065, 3.5, 16);
+      beamGeo.rotateZ(Math.PI / 2);
+      const laserBeam = new THREE.Mesh(
+        beamGeo,
+        new THREE.MeshBasicMaterial({ color: 0x10b981, transparent: true, opacity: 0.92 })
+      );
+      laserBeam.position.set(chX - 0.1, chY, chZ);
+      scene3d.add(laserBeam);
+
+      const scatGeo = new THREE.ConeGeometry(0.36, 1.5, 20, 1, true);
+      scatGeo.rotateX(Math.PI / 2);
+      const scatCone = new THREE.Mesh(
+        scatGeo,
+        new THREE.MeshBasicMaterial({ color: 0x38bdf8, transparent: true, opacity: 0.4, side: THREE.DoubleSide })
+      );
+      scatCone.position.set(chX, chY, chZ + 0.75);
+      scene3d.add(scatCone);
+
+      const polRingGeo = new THREE.TorusGeometry(0.32, 0.06, 12, 28);
+      polRingGeo.rotateY(Math.PI / 2);
+      const polarizerRing = new THREE.Mesh(
+        polRingGeo,
+        new THREE.MeshStandardMaterial({ color: 0x10b981, metalness: 0.7, roughness: 0.2 })
+      );
+      polarizerRing.position.set(chX + 1.05, chY, chZ);
+      window.polarizerRingMesh = polarizerRing;
+      scene3d.add(polarizerRing);
+
+      const faModule = createCjmcuModule3d('FA (OPT101 0°)', '#10b981', 'opt101');
+      faModule.rotation.z = Math.PI / 2;
+      faModule.rotation.y = Math.PI / 2;
+      faModule.position.set(chX + 1.68, chY, chZ);
+      scene3d.add(faModule);
+
+      const fbModule = createCjmcuModule3d('FB (OPT101 90°)', '#38bdf8', 'opt101');
+      fbModule.rotation.x = Math.PI / 2;
+      fbModule.position.set(chX, chY, chZ + 1.60);
+      scene3d.add(fbModule);
+
+      // 5. ARDUINO_UNO AND SYMMETRIC PSU (±15V)
+      const ardX = 5.6;
+      const ardZ = 0.6;
+      const ardPcb = new THREE.Mesh(
+        new THREE.BoxGeometry(2.4, 0.14, 2.0),
+        new THREE.MeshStandardMaterial({ color: 0x0284c7, roughness: 0.3 })
+      );
+      ardPcb.position.set(ardX, 0.28, ardZ);
+      ardPcb.userData = { groupKey: 'protection' };
+      interactiveMeshes3d.push(ardPcb);
+      scene3d.add(ardPcb);
+
+      const ardSp = createBoardLabelSprite('ARDUINO_UNO (A0 / A1)', '#082f49', '#38bdf8', '#e0f2fe', 0.88);
+      ardSp.position.set(ardX, 0.92, ardZ);
+      scene3d.add(ardSp);
+
+      const psuBox = new THREE.Mesh(
+        new THREE.BoxGeometry(2.2, 1.1, 1.45),
+        new THREE.MeshStandardMaterial({ color: 0x312e81, roughness: 0.35, metalness: 0.3 })
+      );
+      psuBox.position.set(5.5, 0.60, -1.9);
+      psuBox.userData = { groupKey: 'psu' };
+      interactiveMeshes3d.push(psuBox);
+      scene3d.add(psuBox);
+
+      const psuSp = createBoardLabelSprite('Fuente ±15V + Zeners', '#1e1b4b', '#a855f7', '#e9d5ff', 0.82);
+      psuSp.position.set(5.5, 1.40, -1.9);
+      scene3d.add(psuSp);
+
+      // 6. REAL-LIFE COLOR-CODED WIRES MATCHING IMAGEN.PNG
+      bridgesGroup3d.add(createWireTube([
+        [chX + 1.8, chY, chZ],
+        [-2.0, 0.92, -0.8],
+        padPos(6, 9, 0.16)
+      ], 0x10b981, 0.062));
+
+      bridgesGroup3d.add(createWireTube([
+        [chX, chY, chZ + 1.75],
+        [-2.0, 0.92, 1.4],
+        padPos(6, 26, 0.16)
+      ], 0x38bdf8, 0.062));
+
+      bridgesGroup3d.add(createWireTube([
+        padPos(30, 9, 0.16),
+        [4.1, 0.80, -0.3],
+        [ardX - 0.9, 0.38, ardZ - 0.35]
+      ], 0x10b981, 0.062));
+
+      bridgesGroup3d.add(createWireTube([
+        padPos(30, 26, 0.16),
+        [4.1, 0.80, 1.1],
+        [ardX - 0.9, 0.38, ardZ + 0.15]
+      ], 0x38bdf8, 0.062));
+
+      bridgesGroup3d.add(createWireTube([
+        padPos(34, 18, 0.14),
+        [4.3, 0.55, 0.5],
+        [ardX - 0.9, 0.38, ardZ + 0.55]
+      ], 0xf59e0b, 0.052));
+
+      bridgesGroup3d.add(createWireTube([
+        [4.4, 0.58, -1.9],
+        padPos(4, 2, 0.16)
+      ], 0xef4444, 0.055));
+
+      bridgesGroup3d.add(createWireTube([
+        [4.4, 0.45, -1.5],
+        padPos(4, 33, 0.16)
+      ], 0xa855f7, 0.055));
+
+      raycaster3d = new THREE.Raycaster();
+      mouse3d = new THREE.Vector2();
+      let isDragging = false;
+      let isPanning = false;
+      let prevX = 0;
+      let prevY = 0;
+      let downX = 0;
+      let downY = 0;
+
+      canvas.addEventListener('contextmenu', e => e.preventDefault());
+      canvas.addEventListener('pointerdown', e => {
+        isDragging = true;
+        isPanning = (e.button === 2 || e.shiftKey);
+        prevX = downX = e.clientX;
+        prevY = downY = e.clientY;
+      });
+
+      window.addEventListener('pointermove', e => {
+        if (!isDragging) return;
+        const dx = e.clientX - prevX;
+        const dy = e.clientY - prevY;
+        prevX = e.clientX;
+        prevY = e.clientY;
+
+        if (isPanning) {
+          const panScale = 0.016 * (desiredCam.radius / 13);
+          desiredCam.target.x -= dx * panScale;
+          desiredCam.target.z -= dy * panScale;
+        } else {
+          desiredCam.theta -= dx * 0.0075;
+          desiredCam.phi = Math.max(0.18, Math.min(1.48, desiredCam.phi - dy * 0.0075));
+        }
+      });
+
+      window.addEventListener('pointerup', e => {
+        if (!isDragging) return;
+        isDragging = false;
+        const moved = Math.hypot(e.clientX - downX, e.clientY - downY);
+        if (moved < 5 && e.target === canvas) {
+          const r = canvas.getBoundingClientRect();
+          mouse3d.x = ((e.clientX - r.left) / r.width) * 2 - 1;
+          mouse3d.y = -((e.clientY - r.top) / r.height) * 2 + 1;
+          raycaster3d.setFromCamera(mouse3d, camera3d);
+          const hits = raycaster3d.intersectObjects(interactiveMeshes3d, true);
+          if (hits.length > 0 && hits[0].object.userData.groupKey) {
+            focus3dGroup(hits[0].object.userData.groupKey);
+          }
+        }
+      });
+
+      canvas.addEventListener('wheel', e => {
+        e.preventDefault();
+        desiredCam.radius = Math.max(3.5, Math.min(26, desiredCam.radius + e.deltaY * 0.011));
+      }, { passive: false });
+
+      window.addEventListener('keydown', e => {
+        if (state.activeTab !== '3d') return;
+        if (['INPUT', 'SELECT', 'TEXTAREA'].includes(document.activeElement.tagName)) return;
+        const step = 0.65;
+        if (e.key === 'w' || e.key === 'W' || e.key === 'ArrowUp') pan3dCamera(0, 0, -step);
+        if (e.key === 's' || e.key === 'S' || e.key === 'ArrowDown') pan3dCamera(0, 0, step);
+        if (e.key === 'a' || e.key === 'A' || e.key === 'ArrowLeft') pan3dCamera(-step, 0, 0);
+        if (e.key === 'd' || e.key === 'D' || e.key === 'ArrowRight') pan3dCamera(step, 0, 0);
+      });
+
+      if (typeof ResizeObserver !== 'undefined') {
+        const ro = new ResizeObserver(() => resizeThreeJS());
+        ro.observe(container);
+      }
+      window.addEventListener('resize', resizeThreeJS);
+
+      focus3dGroup('all');
+    }
+
+    function pan3dCamera(dx, dy, dz) {
+      desiredCam.target.x += dx;
+      desiredCam.target.y += dy;
+      desiredCam.target.z += dz;
+    }
+
+    function zoom3dCamera(deltaR) {
+      desiredCam.radius = Math.max(3.5, Math.min(26, desiredCam.radius + deltaR));
+    }
+
+    function set3dCameraView(mode) {
+      if (mode === 'iso') {
+        focus3dGroup('all');
+      } else if (mode === 'top') {
+        desiredCam.theta = 0.0;
+        desiredCam.phi = 0.18;
+        desiredCam.radius = 9.8;
+        desiredCam.target.set(0.8, 0.4, 0.0);
+      } else if (mode === 'bridges') {
+        focus3dGroup('protection');
+      } else if (mode === 'chamber') {
+        focus3dGroup('chamber');
+      }
+    }
+
+    function toggle3dBridges() {
+      showBridges3d = !showBridges3d;
+      if (bridgesGroup3d) bridgesGroup3d.visible = showBridges3d;
+      const btn = document.getElementById('btn3dToggleBridges');
+      if (btn) btn.textContent = 'Cables y Puentes: ' + (showBridges3d ? 'ON' : 'OFF');
+    }
+
+    function toggle3dLabels() {
+      showLabels3d = !showLabels3d;
+      scene3d.traverse(obj => {
+        if (obj.isSprite) obj.visible = showLabels3d;
+      });
+      document.getElementById('btn3dToggleLabels').textContent = 'Etiquetas: ' + (showLabels3d ? 'ON' : 'OFF');
+    }
+
+    function focus3dGroup(key) {
+      const info = STAGE_INFO_3D[key] || STAGE_INFO_3D.all;
+      document.getElementById('inspectorBadge').textContent = info.badge;
+      document.getElementById('inspectorCoords').textContent = info.coords;
+      document.getElementById('inspectorTitle').textContent = info.title;
+      document.getElementById('inspectorDesc').textContent = info.desc;
+      document.getElementById('inspectorWiringList').innerHTML = info.wiring
+        .map(w => `<li class="p-2 rounded-lg bg-[#161922] border border-white/5 text-gray-200 leading-snug">${w}</li>`)
+        .join('');
+
+      document.querySelectorAll('.stage3d-btn').forEach(btn => {
+        const active = btn.getAttribute('data-stage3d') === key;
+        btn.className = 'stage3d-btn px-3 py-1 text-xs ' + (active ? 'apple-btn' : 'apple-btn-secondary');
+      });
+
+      desiredCam.theta = info.cam.theta;
+      desiredCam.phi = info.cam.phi;
+      desiredCam.radius = info.cam.radius;
+      desiredCam.target.set(info.cam.target[0], info.cam.target[1], info.cam.target[2]);
+    }
+
+    function resizeThreeJS() {
+      const container = document.getElementById('threeContainer');
+      if (!container || !renderer3d || !camera3d) return;
+      const rect = container.getBoundingClientRect();
+      const w = Math.max(320, Math.floor(rect.width || container.clientWidth || 860));
+      const h = Math.max(360, Math.floor(rect.height || container.clientHeight || 500));
+      camera3d.aspect = w / h;
+      camera3d.updateProjectionMatrix();
+      renderer3d.setSize(w, h, false);
+    }
+
+    function update3dLabelsPosition() {}
+
+    function animateLoop(nowMs) {
+      requestAnimationFrame(animateLoop);
+      const tSec = nowMs * 0.001;
+
+      if (!state.paused) {
+        renderDarkChamberAndScopes(tSec);
+      }
+
+      if (renderer3d && scene3d && camera3d) {
+        const container = document.getElementById('threeContainer');
+        if (container) {
+          const rect = container.getBoundingClientRect();
+          if (rect.width > 50 && rect.height > 50) {
+            const pr = renderer3d.getPixelRatio();
+            const canvas = renderer3d.domElement;
+            if (Math.abs(canvas.width / pr - rect.width) > 2 || Math.abs(canvas.height / pr - rect.height) > 2) {
+              resizeThreeJS();
+            }
+          }
+        }
+
+        camSpherical.theta += (desiredCam.theta - camSpherical.theta) * 0.12;
+        camSpherical.phi += (desiredCam.phi - camSpherical.phi) * 0.12;
+        camSpherical.radius += (desiredCam.radius - camSpherical.radius) * 0.12;
+        camTarget.lerp(desiredCam.target, 0.12);
+
+        const x = camTarget.x + camSpherical.radius * Math.sin(camSpherical.phi) * Math.sin(camSpherical.theta);
+        const y = camTarget.y + camSpherical.radius * Math.cos(camSpherical.phi);
+        const z = camTarget.z + camSpherical.radius * Math.sin(camSpherical.phi) * Math.cos(camSpherical.theta);
+        camera3d.position.set(x, y, z);
+        camera3d.lookAt(camTarget);
+
+        renderer3d.render(scene3d, camera3d);
+      }
+    }
+
+    window.addEventListener('DOMContentLoaded', () => {
+      if (window.lucide) window.lucide.createIcons();
+      initCharts();
+      initThreeJS();
+      updateSimulationParams();
+      logCurrentSample();
+      requestAnimationFrame(animateLoop);
+    });
+  </script>
+</body>
+</html>
